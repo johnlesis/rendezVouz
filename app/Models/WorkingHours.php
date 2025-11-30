@@ -4,15 +4,15 @@ namespace App\Models;
 
 use DateTimeImmutable;
 
-final readonly class User
+final readonly class WorkingHours
 {
     public function __construct(
         public ?int $id,
-        public string $name,
-        public string $email,
-        public string $password,
-        public ?DateTimeImmutable $emailVerifiedAt = null,
-        public ?string $rememberToken = null,
+        public int $technicianId,
+        public int $dayOfWeek,
+        public string $startTime,
+        public string $endTime,
+        public bool $isActive,
         public ?DateTimeImmutable $createdAt = null,
         public ?DateTimeImmutable $updatedAt = null,
     ) {}
