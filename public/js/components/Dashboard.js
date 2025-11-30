@@ -149,6 +149,7 @@ const Dashboard = {
       appointmentSuccess: '',
       currentMonth: new Date().getMonth(),
       currentYear: new Date().getFullYear(),
+      technicianSchedule: null,
     };
   },
   computed: {
@@ -220,10 +221,16 @@ const Dashboard = {
     const service = this.services.find(s => s.id == this.appointment.service_id);
     if (!service) return [];
 
-    const duration = service.duration; // in minutes
-    const workingStart = "09:00";
-    const workingEnd = "17:00";
+    // Use technician schedule or fallback to default
+    const workingStart = this.technicianSchedule?.start_time?.substring(0, 5) || "09:00";
+    const workingEnd = this.technicianSchedule?.end_time?.substring(0, 5) || "17:00";
 
+    // Check if technician is available
+    if (this.technicianSchedule && !this.technicianSchedule.is_available) {
+      return [];
+    }
+
+    const duration = service.duration; // in minutes
     const slots = [];
     let currentTime = this.timeStringToMinutes(workingStart);
     const endTime = this.timeStringToMinutes(workingEnd);
@@ -279,13 +286,13 @@ const Dashboard = {
       if (!day.isCurrentMonth) return;
       this.appointment.date = day.date;
       this.appointment.time = '';
-      this.fetchAvailableHours();
+      this.fetchTechnicianSchedule();
     },
     resetSelection() {
       this.appointment.technician_id = '';
       this.appointment.date = '';
       this.appointment.time = '';
-      this.availableHours = [];
+      this.technicianSchedule = null;
       const today = new Date();
       this.currentMonth = today.getMonth();
       this.currentYear = today.getFullYear();
@@ -293,7 +300,7 @@ const Dashboard = {
     resetDayAndTime() {
       this.appointment.date = '';
       this.appointment.time = '';
-      this.availableHours = [];
+      this.technicianSchedule = null;
     },
     fetchServices() {
       axios.get('/api/services')
@@ -316,14 +323,12 @@ const Dashboard = {
       delete axios.defaults.headers.common['Authorization'];
       this.$router.push('/');
     },
-    fetchAvailableHours() {
-      if (!this.appointment.service_id || !this.appointment.technician_id || !this.appointment.date) return;
-      this.loadingHours = true;
+    fetchTechnicianSchedule() {
+      if (!this.appointment.technician_id || !this.appointment.date) return;
       this.appointmentError = '';
-      this.availableHours = [];
-      axios.get('/api/available-slots', { params: { technician_id: this.appointment.technician_id, date: this.appointment.date, service_id: this.appointment.service_id } })
-        .then(res => { this.availableHours = res.data.slots; this.loadingHours = false; })
-        .catch(err => { this.appointmentError = err.response?.data?.message || 'Failed to fetch slots'; this.loadingHours = false; });
+      axios.get('/api/technician-schedule', { params: { technician_id: this.appointment.technician_id, date: this.appointment.date } })
+        .then(res => { this.technicianSchedule = res.data; })
+        .catch(err => { this.appointmentError = err.response?.data?.message || 'Failed to fetch schedule'; });
     },
     bookAppointment() {
       if (!this.canBook) { this.appointmentError = 'Please fill in all fields'; return; }
@@ -332,7 +337,7 @@ const Dashboard = {
           this.appointmentSuccess = 'Appointment booked successfully!';
           this.appointmentError = '';
           this.appointment = { service_id: '', technician_id: '', date: '', time: '' };
-          this.availableHours = [];
+          this.technicianSchedule = null;
           const today = new Date();
           this.currentMonth = today.getMonth();
           this.currentYear = today.getFullYear();

@@ -19,7 +19,17 @@ class WorkingHoursController extends Controller
 
     public function index(Request $request)
     {
-       
+        $request->validate([
+            'technician_id' => 'required|exists:technicians,id',
+            'date' => 'required|date',
+        ]);
+
+        $schedule = $this->scheduleService->getScheduleForDate(
+            $request->technician_id,
+            $request->date
+        );
+
+        return response()->json($schedule);
     }
 
     public function create(Request $request)
