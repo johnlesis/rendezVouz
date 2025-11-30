@@ -2,18 +2,22 @@
 
 namespace App\Models;
 
-use DateTimeImmutable;
+use Illuminate\Database\Eloquent\Model;
 
-final readonly class Service
+class Service extends Model
 {
-    public function __construct(
-        public ?int $id,
-        public string $name,
-        public ?string $description,
-        public float $price,
-        public int $duration,
-        public bool $isActive,
-        public ?DateTimeImmutable $createdAt = null,
-        public ?DateTimeImmutable $updatedAt = null,
-    ) {}
+    protected $fillable = [
+        'name', 'description', 'price', 'duration', 'is_active'
+    ];
+
+    protected $casts = [
+        'is_active' => 'boolean',
+        'price' => 'float'
+    ];
+
+    // Scope for active services
+    public function scopeActive($query)
+    {
+        return $query->where('is_active', true);
+    }
 }

@@ -2,17 +2,38 @@
 
 namespace App\Models;
 
-use DateTimeImmutable;
+use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
-final readonly class Technician
+class Technician extends Model
 {
-    public function __construct(
-        public ?int $id,
-        public int $userId,
-        public string $specialization,
-        public ?string $bio,
-        public bool $isAvailable,
-        public ?DateTimeImmutable $createdAt = null,
-        public ?DateTimeImmutable $updatedAt = null,
-    ) {}
+    protected $fillable = [
+        'user_id',
+        'name',
+        'specialization',
+        'bio',
+        'is_available',
+    ];
+
+    protected $casts = [
+        'is_available' => 'boolean',
+    ];
+
+    // Relationship to user
+    public function user(): BelongsTo
+    {
+        return $this->belongsTo(User::class);
+    }
+
+    // Relationship to schedules
+    public function schedules()
+    {
+        return $this->hasMany(TechnicianSchedule::class);
+    }
+
+    // Relationship to appointments
+    public function appointments()
+    {
+        return $this->hasMany(Appointment::class);
+    }
 }

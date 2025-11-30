@@ -2,6 +2,8 @@
 
 use Illuminate\Support\Facades\Route;
 
-Route::get('/', function () {
-    return view('welcome');
-});
+// All other routes point to SPA
+Route::get('/{any}', function () {
+    return view('spa'); // your Vue SPA entry point
+})->where('any', '.*');
+

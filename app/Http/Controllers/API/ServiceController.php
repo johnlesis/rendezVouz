@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\API;
 
 use App\Http\Controllers\Controller;
+use App\Models\Service;
 use Illuminate\Http\Request;
 
 class ServiceController extends Controller
@@ -12,7 +13,8 @@ class ServiceController extends Controller
      */
     public function index()
     {
-        //
+        $services = Service::where('is_active', true)->get();
+        return response()->json($services);
     }
 
     /**
@@ -20,7 +22,7 @@ class ServiceController extends Controller
      */
     public function create()
     {
-        //
+        
     }
 
     /**
@@ -28,7 +30,20 @@ class ServiceController extends Controller
      */
     public function store(Request $request)
     {
-        //
+        $request->validate([
+            'name' => 'required|string|max:255',
+            'description' => 'nullable|string',
+            'price' => 'required|numeric|min:0',
+            'duration' => 'required|integer|min:1',
+            'is_active' => 'boolean',
+        ]);
+
+        $service = Service::create($request->all());
+
+        return response()->json([
+            'message' => 'Service created successfully',
+            'service' => $service
+        ], 201);
     }
 
     /**
@@ -52,7 +67,21 @@ class ServiceController extends Controller
      */
     public function update(Request $request, string $id)
     {
-        //
+        $request->validate([
+            'name' => 'required|string|max:255',
+            'description' => 'nullable|string',
+            'price' => 'required|numeric|min:0',
+            'duration' => 'required|integer|min:1',
+            'is_active' => 'boolean',
+        ]);
+
+        $service = Service::findOrFail($id);
+        $service->update($request->all());
+
+        return response()->json([
+            'message' => 'Service updated successfully',
+            'service' => $service
+        ]);
     }
 
     /**
@@ -60,6 +89,11 @@ class ServiceController extends Controller
      */
     public function destroy(string $id)
     {
-        //
+        $service = Service::findOrFail($id);
+        $service->delete();
+
+        return response()->json([
+            'message' => 'Service deleted successfully'
+        ]);
     }
 }

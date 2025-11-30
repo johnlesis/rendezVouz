@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\API;
 
 use App\Http\Controllers\Controller;
+use App\Models\Technician;
 use Illuminate\Http\Request;
 
 class TechnicianController extends Controller
@@ -12,7 +13,8 @@ class TechnicianController extends Controller
      */
     public function index()
     {
-        //
+        $technicians = Technician::all();
+        return response()->json($technicians);
     }
 
     /**
@@ -28,7 +30,19 @@ class TechnicianController extends Controller
      */
     public function store(Request $request)
     {
-        //
+        $request->validate([
+            'name' => 'required|string|max:255',
+            'specialization' => 'nullable|string|max:255',
+            'bio' => 'nullable|string',
+            'is_available' => 'boolean',
+        ]);
+
+        $technician = Technician::create($request->all());
+
+        return response()->json([
+            'message' => 'Technician created successfully',
+            'technician' => $technician
+        ], 201);
     }
 
     /**
@@ -52,7 +66,20 @@ class TechnicianController extends Controller
      */
     public function update(Request $request, string $id)
     {
-        //
+        $request->validate([
+            'name' => 'required|string|max:255',
+            'specialization' => 'nullable|string|max:255',
+            'bio' => 'nullable|string',
+            'is_available' => 'boolean',
+        ]);
+
+        $technician = Technician::findOrFail($id);
+        $technician->update($request->all());
+
+        return response()->json([
+            'message' => 'Technician updated successfully',
+            'technician' => $technician
+        ]);
     }
 
     /**
@@ -60,6 +87,11 @@ class TechnicianController extends Controller
      */
     public function destroy(string $id)
     {
-        //
+        $technician = Technician::findOrFail($id);
+        $technician->delete();
+
+        return response()->json([
+            'message' => 'Technician deleted successfully'
+        ]);
     }
 }

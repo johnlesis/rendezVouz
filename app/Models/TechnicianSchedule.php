@@ -2,19 +2,34 @@
 
 namespace App\Models;
 
-use DateTimeImmutable;
+use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
-final readonly class TechnicianSchedule
+class TechnicianSchedule extends Model
 {
-    public function __construct(
-        public ?int $id,
-        public int $technicianId,
-        public DateTimeImmutable $date,
-        public string $startTime,
-        public string $endTime,
-        public bool $isAvailable,
-        public ?string $reason,
-        public ?DateTimeImmutable $createdAt = null,
-        public ?DateTimeImmutable $updatedAt = null,
-    ) {}
+    protected $fillable = [
+        'technician_id',
+        'date',
+        'start_time',
+        'end_time',
+        'is_available',
+        'reason',
+    ];
+
+    protected $casts = [
+        'date' => 'date',
+        'is_available' => 'boolean',
+    ];
+
+    // Relationship to Technician
+    public function technician(): BelongsTo
+    {
+        return $this->belongsTo(Technician::class);
+    }
+
+    // Scope for only available days
+    public function scopeAvailable($query)
+    {
+        return $query->where('is_available', true);
+    }
 }

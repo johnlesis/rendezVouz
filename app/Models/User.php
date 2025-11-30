@@ -2,18 +2,37 @@
 
 namespace App\Models;
 
-use DateTimeImmutable;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Foundation\Auth\User as Authenticatable;
+use Laravel\Sanctum\HasApiTokens; 
+use Illuminate\Notifications\Notifiable;
 
-final readonly class User
+class User extends Authenticatable
 {
-    public function __construct(
-        public ?int $id,
-        public string $name,
-        public string $email,
-        public string $password,
-        public ?DateTimeImmutable $emailVerifiedAt = null,
-        public ?string $rememberToken = null,
-        public ?DateTimeImmutable $createdAt = null,
-        public ?DateTimeImmutable $updatedAt = null,
-    ) {}
+    use HasApiTokens, HasFactory, Notifiable; 
+
+    protected $fillable = [
+        'name',
+        'email',
+        'password',
+        'is_admin',
+    ];
+
+    protected $hidden = [
+        'password',
+        'remember_token',
+    ];
+
+    protected $casts = [
+        'email_verified_at' => 'datetime',
+        'is_admin' => 'boolean',
+    ];
+
+    /**
+     * Check if the user is an admin
+     */
+    public function isAdmin(): bool
+    {
+        return $this->is_admin;
+    }
 }
