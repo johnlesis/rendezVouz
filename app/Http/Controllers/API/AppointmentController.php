@@ -47,6 +47,7 @@ class AppointmentController extends Controller
                         'id' => $apt->id,
                         'user' => $apt->user->name ?? 'Unknown',
                         'service' => $apt->service->name ?? 'Unknown',
+                        'scheduled_at' => $apt->start_time->format('Y-m-d'),
                         'start_time' => $apt->start_time->format('H:i'),
                         'end_time' => $apt->end_time->format('H:i'),
                         'status' => $apt->status,

@@ -204,7 +204,7 @@ const Dashboard = {
   },
   methods: {
 
-    timeStringToMinutes(str) {
+  timeStringToMinutes(str) {
     const [h, m] = str.split(':').map(Number);
     return h * 60 + m;
   },

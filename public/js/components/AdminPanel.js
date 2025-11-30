@@ -714,7 +714,10 @@ const AdminPanel = {
     },
     getAppointmentsForDate(date) {
       return this.appointments.filter(apt => {
-        const aptDate = new Date(apt.scheduled_at).toISOString().split('T')[0];
+        if (!apt.scheduled_at) return false; // ignore invalid entries
+        const aptDateObj = new Date(apt.scheduled_at);
+        if (isNaN(aptDateObj.getTime())) return false; // ignore invalid dates
+        const aptDate = aptDateObj.toISOString().split('T')[0];
         return aptDate === date;
       });
     },
