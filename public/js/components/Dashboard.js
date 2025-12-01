@@ -370,3 +370,6 @@ const Dashboard = {
     }
   }
 };
+
+window.Dashboard = Dashboard
+

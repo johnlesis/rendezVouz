@@ -91,3 +91,4 @@ const Register = {
     }
   }
 }
+window.Register = Register

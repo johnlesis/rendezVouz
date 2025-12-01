@@ -71,3 +71,6 @@ const Login = {
     }
   }
 }
+
+window.Login = Login
+

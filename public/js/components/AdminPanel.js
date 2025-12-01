@@ -1623,3 +1623,6 @@ const AdminPanel = {
     }
   }
 };
+window.AdminPanel = AdminPanel
+
+

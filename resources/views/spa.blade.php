@@ -14,10 +14,10 @@
 </div>
 
 <!-- Include Components -->
-<script src="{{ asset('js/components/Login.js') }}"></script>
-<script src="{{ asset('js/components/Register.js') }}"></script>
-<script src="{{ asset('js/components/Dashboard.js') }}"></script>
-<script src="{{ asset('js/components/AdminPanel.js') }}"></script>
+<script src="https://rendezvouz.onrender.com/js/components/Login.js"></script>
+<script src="https://rendezvouz.onrender.com/js/components/Register.js"></script>
+<script src="https://rendezvouz.onrender.com/js/components/Dashboard.js"></script>
+<script src="https://rendezvouz.onrender.com/js/components/AdminPanel.js"></script>
 
 <script>
   // Axios default token
