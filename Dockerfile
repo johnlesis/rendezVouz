@@ -9,21 +9,31 @@ RUN apt-get update && apt-get install -y \
     libxml2-dev \
     libpq-dev \
     zip \
-    unzip
-
-# Clear cache
-RUN apt-get clean && rm -rf /var/lib/apt/lists/*
+    unzip \
+    && apt-get clean \
+    && rm -rf /var/lib/apt/lists/*
 
 # Install PHP extensions
 RUN docker-php-ext-install pdo_pgsql pgsql mbstring exif pcntl bcmath gd
 
-# Get latest Composer
+# Install Composer
 COPY --from=composer:latest /usr/bin/composer /usr/bin/composer
 
 # Set working directory
 WORKDIR /var/www
 
-# Expose port 9000 (PHP-FPM)
-EXPOSE 9000
+# Copy project files
+COPY . .
 
-CMD ["php-fpm"]
+# Install PHP dependencies
+RUN composer install --no-dev --optimize-autoloader --no-interaction
+
+# Cache Laravel config (optional but recommended)
+RUN php artisan config:cache || true
+RUN php artisan route:cache || true
+
+# Expose a port (optional — Render ignores the number)
+EXPOSE 8000
+
+# Start Laravel using the Render-assigned port
+CMD ["sh", "-c", "php artisan serve --host 0.0.0.0 --port $PORT"]
