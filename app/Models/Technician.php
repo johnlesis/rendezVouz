@@ -36,4 +36,10 @@ class Technician extends Model
     {
         return $this->hasMany(Appointment::class);
     }
+
+    // Relationship to working hours
+    public function workingHours()
+    {
+        return $this->hasMany(WorkingHour::class);
+    }
 }

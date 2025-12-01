@@ -47,7 +47,7 @@ const Dashboard = {
               </div>
 
               <div class="grid grid-cols-7 gap-1 text-center">
-                <div v-for="day in ['Κυ','Δε','Τρ','Τε','Πε','Πα','Σα']" :key="day" class="text-xs font-semibold text-gray-600 py-2">{{ day }}</div>
+                <div v-for="day in ['Δε','Τρ','Τε','Πε','Πα','Σα','Κυ']" :key="day" class="text-xs font-semibold text-gray-600 py-2">{{ day }}</div>
                 <div v-for="day in calendarDays" :key="day.date" @click="selectDate(day)"
                   :class="[
                     'py-2 rounded cursor-pointer transition-colors',
@@ -168,17 +168,20 @@ const Dashboard = {
       const today = new Date();
       today.setHours(0, 0, 0, 0);
 
+      // Convert getDay() (0=Sunday) to Monday-first (0=Monday, 6=Sunday)
+      const firstDayOfWeek = firstDay.getDay() === 0 ? 6 : firstDay.getDay() - 1;
+
       // Previous month days
-      for (let i = firstDay.getDay() - 1; i >= 0; i--) {
+      for (let i = firstDayOfWeek - 1; i >= 0; i--) {
         const day = prevLastDay.getDate() - i;
         const date = new Date(this.currentYear, this.currentMonth - 1, day);
-        days.push({ day, date: date.toISOString().split('T')[0], isCurrentMonth: false, isToday: false, isSelected: false });
+        days.push({ day, date: this.formatDateString(date), isCurrentMonth: false, isToday: false, isSelected: false });
       }
 
       // Current month days
       for (let d = 1; d <= lastDay.getDate(); d++) {
         const date = new Date(this.currentYear, this.currentMonth, d);
-        const dateString = date.toISOString().split('T')[0];
+        const dateString = this.formatDateString(date);
         const isToday = date.getTime() === today.getTime();
         const isSelected = this.appointment.date === dateString;
         days.push({ day: d, date: dateString, isCurrentMonth: true, isToday, isSelected });
@@ -188,7 +191,7 @@ const Dashboard = {
       const remaining = 42 - days.length;
       for (let d = 1; d <= remaining; d++) {
         const date = new Date(this.currentYear, this.currentMonth + 1, d);
-        days.push({ day: d, date: date.toISOString().split('T')[0], isCurrentMonth: false, isToday: false, isSelected: false });
+        days.push({ day: d, date: this.formatDateString(date), isCurrentMonth: false, isToday: false, isSelected: false });
       }
 
       return days;
@@ -204,6 +207,12 @@ const Dashboard = {
     this.fetchAppointments();
   },
   methods: {
+    formatDateString(date) {
+      const year = date.getFullYear();
+      const month = String(date.getMonth() + 1).padStart(2, '0');
+      const day = String(date.getDate()).padStart(2, '0');
+      return `${year}-${month}-${day}`;
+    },
 
   timeStringToMinutes(str) {
     const [h, m] = str.split(':').map(Number);

@@ -34,6 +34,17 @@ Route::middleware('auth:sanctum')->group(function() {
     // Technician Schedule
     Route::get('technician-schedule', [WorkingHoursController::class, 'index']);
 
+    // Weekly Working Hours
+    Route::get('working-hours', [WorkingHoursController::class, 'getWeeklyHours']);
+    Route::post('working-hours', [WorkingHoursController::class, 'setWeeklyHours']);
+    Route::delete('working-hours', [WorkingHoursController::class, 'deleteWeeklyHours']);
+
+    // Technician Schedule Management (specific dates)
+    Route::get('technician-schedule/blocked', [WorkingHoursController::class, 'getBlockedDates']);
+    Route::post('technician-schedule', [WorkingHoursController::class, 'create']);
+    Route::put('technician-schedule', [WorkingHoursController::class, 'edit']);
+    Route::delete('technician-schedule/range', [WorkingHoursController::class, 'destroyDateRange']);
+
     // Technicians
     Route::apiResource('technicians', TechnicianController::class);
 

@@ -189,7 +189,7 @@ const AdminPanel = {
                 </div>
 
                 <div class="grid grid-cols-7 gap-1 text-center">
-                  <div v-for="day in ['Κυ','Δε','Τρ','Τε','Πε','Πα','Σα']" :key="day" class="text-xs font-semibold text-gray-600 py-2">{{ day }}</div>
+                  <div v-for="day in ['Δε','Τρ','Τε','Πε','Πα','Σα','Κυ']" :key="day" class="text-xs font-semibold text-gray-600 py-2">{{ day }}</div>
                   <div v-for="day in bookingCalendarDays" :key="day.date" @click="selectBookingDate(day)" type="button"
                     :class="[
                       'py-2 rounded cursor-pointer transition-colors',
@@ -496,7 +496,7 @@ const AdminPanel = {
           <div class="border rounded-lg overflow-hidden">
             <!-- Day Headers -->
             <div class="grid grid-cols-7 bg-gray-100">
-              <div v-for="day in ['Κυρ', 'Δευ', 'Τρί', 'Τετ', 'Πέμ', 'Παρ', 'Σάβ']" :key="day" class="text-center py-2 text-sm font-semibold text-gray-700 border-r last:border-r-0">
+              <div v-for="day in ['Δευ', 'Τρί', 'Τετ', 'Πέμ', 'Παρ', 'Σάβ', 'Κυρ']" :key="day" class="text-center py-2 text-sm font-semibold text-gray-700 border-r last:border-r-0">
                 {{ day }}
               </div>
             </div>
@@ -507,16 +507,18 @@ const AdminPanel = {
                 v-for="day in calendarDays"
                 :key="day.date"
                 :class="[
-                  'min-h-24 p-2 border-r border-b last:border-r-0',
+                  'min-h-24 p-2 border-r border-b last:border-r-0 relative',
                   day.isCurrentMonth ? 'bg-white' : 'bg-gray-50',
-                  day.isToday ? 'bg-blue-50' : ''
+                  day.isToday ? 'bg-blue-50' : '',
+                  isDateBlocked(day.date) ? 'bg-red-50' : ''
                 ]"
               >
                 <div :class="[
-                  'text-sm font-medium mb-1',
+                  'text-sm font-medium mb-1 flex items-center justify-between',
                   day.isCurrentMonth ? 'text-gray-900' : 'text-gray-400'
                 ]">
-                  {{ day.day }}
+                  <span>{{ day.day }}</span>
+                  <span v-if="isDateBlocked(day.date)" class="text-red-600 text-lg" title="Μη διαθέσιμη ημέρα">⊗</span>
                 </div>
                 <div class="space-y-1">
                   <div
@@ -533,6 +535,171 @@ const AdminPanel = {
           </div>
         </div>
 
+        <!-- Working Hours Tab -->
+        <div v-show="activeTab === 'working-hours'" class="bg-white p-6 rounded-lg shadow-md">
+          <h3 class="text-xl font-bold mb-6">Διαχείριση Ωραρίου Εργασίας Τεχνικών</h3>
+
+          <!-- Technician Selection -->
+          <div class="mb-6">
+            <label class="block text-gray-700 font-medium mb-2">Επιλογή Τεχνικού</label>
+            <select
+              v-model="selectedTechnicianForHours"
+              @change="loadWorkingHours"
+              class="w-full border border-gray-300 rounded-md px-4 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
+            >
+              <option value="">-- Επιλέξτε Τεχνικό --</option>
+              <option v-for="tech in technicians" :key="tech.id" :value="tech.id">
+                {{ tech.name }}
+              </option>
+            </select>
+          </div>
+
+          <!-- Working Hours Form -->
+          <div v-if="selectedTechnicianForHours" class="space-y-4">
+            <div class="bg-blue-50 border-l-4 border-blue-500 p-4 mb-4">
+              <p class="text-sm text-blue-800">
+                Ορίστε το ωράριο εργασίας για κάθε ημέρα της εβδομάδας. Απενεργοποιήστε τις ημέρες που δεν εργάζεται ο τεχνικός.
+              </p>
+            </div>
+
+            <div v-for="(day, index) in weekDays" :key="index" class="border rounded-lg p-4">
+              <div class="flex flex-col sm:flex-row sm:items-center gap-4">
+                <!-- Day Name -->
+                <div class="w-full sm:w-32">
+                  <label class="font-medium text-gray-700">{{ day.name }}</label>
+                </div>
+
+                <!-- Active Toggle -->
+                <div class="flex items-center">
+                  <input
+                    type="checkbox"
+                    v-model="workingHoursForm[index].is_active"
+                    class="w-4 h-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500"
+                  />
+                  <label class="ml-2 text-sm text-gray-600">Ενεργό</label>
+                </div>
+
+                <!-- Time Inputs -->
+                <div class="flex-1 flex gap-4" v-if="workingHoursForm[index].is_active">
+                  <div class="flex-1">
+                    <label class="block text-xs text-gray-600 mb-1">Ώρα Έναρξης</label>
+                    <input
+                      type="text"
+                      v-model="workingHoursForm[index].start_time"
+                      placeholder="09:00"
+                      pattern="([01]?[0-9]|2[0-3]):[0-5][0-9]"
+                      maxlength="5"
+                      class="w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    />
+                  </div>
+                  <div class="flex-1">
+                    <label class="block text-xs text-gray-600 mb-1">Ώρα Λήξης</label>
+                    <input
+                      type="text"
+                      v-model="workingHoursForm[index].end_time"
+                      placeholder="17:00"
+                      pattern="([01]?[0-9]|2[0-3]):[0-5][0-9]"
+                      maxlength="5"
+                      class="w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    />
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Save Button -->
+            <div class="flex gap-4 pt-4">
+              <button
+                @click="saveWorkingHours"
+                :disabled="savingWorkingHours"
+                class="bg-blue-500 text-white px-6 py-2 rounded-md hover:bg-blue-600 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                {{ savingWorkingHours ? 'Αποθήκευση...' : 'Αποθήκευση Ωραρίου' }}
+              </button>
+              <button
+                @click="resetWorkingHoursForm"
+                class="bg-gray-300 text-gray-700 px-6 py-2 rounded-md hover:bg-gray-400 transition-colors"
+              >
+                Επαναφορά
+              </button>
+            </div>
+
+          <!-- Blocked Dates Section -->
+          <div v-if="selectedTechnicianForHours" class="mt-8 border-t pt-6">
+            <h4 class="text-lg font-semibold mb-4">Αποκλεισμός Ημερομηνιών</h4>
+
+            <div class="bg-yellow-50 border-l-4 border-yellow-500 p-4 mb-4">
+              <p class="text-sm text-yellow-800">
+                Επιλέξτε εύρος ημερομηνιών για να τις κάνετε μη διαθέσιμες για ραντεβού (π.χ. άδεια, αργία).
+              </p>
+            </div>
+
+            <!-- Block Dates Form -->
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+              <div>
+                <label class="block text-sm font-medium text-gray-700 mb-2">Από Ημερομηνία</label>
+                <input
+                  type="date"
+                  v-model="blockDatesForm.start_date"
+                  :min="today"
+                  class="w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                />
+              </div>
+              <div>
+                <label class="block text-sm font-medium text-gray-700 mb-2">Έως Ημερομηνία</label>
+                <input
+                  type="date"
+                  v-model="blockDatesForm.end_date"
+                  :min="blockDatesForm.start_date || today"
+                  class="w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                />
+              </div>
+              <div class="flex items-end">
+                <button
+                  @click="blockDates"
+                  :disabled="!canBlockDates || blockingDates"
+                  class="w-full bg-red-500 text-white px-4 py-2 rounded-md hover:bg-red-600 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                  {{ blockingDates ? 'Αποκλεισμός...' : 'Αποκλεισμός Ημερομηνιών' }}
+                </button>
+              </div>
+            </div>
+
+            <!-- List of Blocked Date Ranges -->
+            <div v-if="blockedDateRanges.length > 0" class="space-y-2">
+              <h5 class="font-medium text-gray-700 mb-3">Αποκλεισμένες Ημερομηνίες</h5>
+              <div
+                v-for="(range, index) in blockedDateRanges"
+                :key="index"
+                class="flex items-center justify-between bg-red-50 border border-red-200 rounded-md p-3"
+              >
+                <div>
+                  <span class="font-medium">{{ formatDateRange(range.start, range.end) }}</span>
+                  <span class="text-sm text-gray-600 ml-2">({{ range.count }} {{ range.count === 1 ? 'ημέρα' : 'ημέρες' }})</span>
+                </div>
+                <button
+                  @click="removeBlockedRange(range)"
+                  class="text-red-600 hover:text-red-800 transition-colors"
+                >
+                  <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                  </svg>
+                </button>
+              </div>
+            </div>
+
+            <div v-else class="text-center py-4 text-gray-500">
+              Δεν υπάρχουν αποκλεισμένες ημερομηνίες για αυτόν τον τεχνικό.
+            </div>
+          </div>
+          </div>
+
+          <!-- No Technician Selected -->
+          <div v-else class="text-center py-8 text-gray-500">
+            Παρακαλώ επιλέξτε έναν τεχνικό για να διαχειριστείτε το ωράριο εργασίας του.
+          </div>
+        </div>
+
       </div>
     </div>
   `,
@@ -545,7 +712,8 @@ const AdminPanel = {
         { id: 'book', name: 'Κλείσιμο Ραντεβού' },
         { id: 'technicians', name: 'Τεχνικοί' },
         { id: 'services', name: 'Υπηρεσίες' },
-        { id: 'calendar', name: 'Ημερολόγιο' }
+        { id: 'calendar', name: 'Ημερολόγιο' },
+        { id: 'working-hours', name: 'Ωράριο Εργασίας' }
       ],
       stats: {
         totalAppointments: 0,
@@ -600,7 +768,34 @@ const AdminPanel = {
       currentYear: new Date().getFullYear(),
       bookingMonth: new Date().getMonth(),
       bookingYear: new Date().getFullYear(),
-      bookingTechnicianSchedule: null
+      bookingTechnicianSchedule: null,
+      selectedTechnicianForHours: '',
+      workingHoursForm: [
+        { day_of_week: 0, start_time: '09:00', end_time: '17:00', is_active: false },
+        { day_of_week: 1, start_time: '09:00', end_time: '17:00', is_active: true },
+        { day_of_week: 2, start_time: '09:00', end_time: '17:00', is_active: true },
+        { day_of_week: 3, start_time: '09:00', end_time: '17:00', is_active: true },
+        { day_of_week: 4, start_time: '09:00', end_time: '17:00', is_active: true },
+        { day_of_week: 5, start_time: '09:00', end_time: '17:00', is_active: true },
+        { day_of_week: 6, start_time: '09:00', end_time: '17:00', is_active: false }
+      ],
+      weekDays: [
+        { name: 'Κυριακή', value: 0 },
+        { name: 'Δευτέρα', value: 1 },
+        { name: 'Τρίτη', value: 2 },
+        { name: 'Τετάρτη', value: 3 },
+        { name: 'Πέμπτη', value: 4 },
+        { name: 'Παρασκευή', value: 5 },
+        { name: 'Σάββατο', value: 6 }
+      ],
+      savingWorkingHours: false,
+      blockDatesForm: {
+        start_date: '',
+        end_date: ''
+      },
+      blockedDates: [],
+      blockingDates: false,
+      allBlockedDates: []
     }
   },
   computed: {
@@ -624,17 +819,20 @@ const AdminPanel = {
       const today = new Date();
       today.setHours(0, 0, 0, 0);
 
+      // Convert getDay() (0=Sunday) to Monday-first (0=Monday, 6=Sunday)
+      const firstDayOfWeek = firstDay.getDay() === 0 ? 6 : firstDay.getDay() - 1;
+
       // Previous month days
-      for (let i = firstDay.getDay() - 1; i >= 0; i--) {
+      for (let i = firstDayOfWeek - 1; i >= 0; i--) {
         const day = prevLastDay.getDate() - i;
         const date = new Date(this.bookingYear, this.bookingMonth - 1, day);
-        days.push({ day, date: date.toISOString().split('T')[0], isCurrentMonth: false, isToday: false, isSelected: false });
+        days.push({ day, date: this.formatDateString(date), isCurrentMonth: false, isToday: false, isSelected: false });
       }
 
       // Current month days
       for (let d = 1; d <= lastDay.getDate(); d++) {
         const date = new Date(this.bookingYear, this.bookingMonth, d);
-        const dateString = date.toISOString().split('T')[0];
+        const dateString = this.formatDateString(date);
         const isToday = date.getTime() === today.getTime();
         const isSelected = this.bookingForm.date === dateString;
         days.push({ day: d, date: dateString, isCurrentMonth: true, isToday, isSelected });
@@ -644,7 +842,7 @@ const AdminPanel = {
       const remaining = 42 - days.length;
       for (let d = 1; d <= remaining; d++) {
         const date = new Date(this.bookingYear, this.bookingMonth + 1, d);
-        days.push({ day: d, date: date.toISOString().split('T')[0], isCurrentMonth: false, isToday: false, isSelected: false });
+        days.push({ day: d, date: this.formatDateString(date), isCurrentMonth: false, isToday: false, isSelected: false });
       }
 
       return days;
@@ -662,7 +860,8 @@ const AdminPanel = {
       const lastDay = new Date(this.currentYear, this.currentMonth + 1, 0);
       const prevLastDay = new Date(this.currentYear, this.currentMonth, 0);
 
-      const firstDayOfWeek = firstDay.getDay();
+      // Convert getDay() (0=Sunday) to Monday-first (0=Monday, 6=Sunday)
+      const firstDayOfWeek = firstDay.getDay() === 0 ? 6 : firstDay.getDay() - 1;
       const lastDate = lastDay.getDate();
       const prevLastDate = prevLastDay.getDate();
 
@@ -676,7 +875,7 @@ const AdminPanel = {
         const date = new Date(this.currentYear, this.currentMonth - 1, day);
         days.push({
           day,
-          date: date.toISOString().split('T')[0],
+          date: this.formatDateString(date),
           isCurrentMonth: false,
           isToday: false
         });
@@ -685,7 +884,7 @@ const AdminPanel = {
       // Current month days
       for (let day = 1; day <= lastDate; day++) {
         const date = new Date(this.currentYear, this.currentMonth, day);
-        const dateString = date.toISOString().split('T')[0];
+        const dateString = this.formatDateString(date);
         const isToday = date.getTime() === today.getTime();
 
         days.push({
@@ -702,13 +901,51 @@ const AdminPanel = {
         const date = new Date(this.currentYear, this.currentMonth + 1, day);
         days.push({
           day,
-          date: date.toISOString().split('T')[0],
+          date: this.formatDateString(date),
           isCurrentMonth: false,
           isToday: false
         });
       }
 
       return days;
+    },
+    today() {
+      return new Date().toISOString().split('T')[0];
+    },
+    canBlockDates() {
+      return this.selectedTechnicianForHours &&
+             this.blockDatesForm.start_date &&
+             this.blockDatesForm.end_date;
+    },
+    blockedDateRanges() {
+      if (this.blockedDates.length === 0) return [];
+
+      // Group consecutive dates into ranges
+      const sorted = [...this.blockedDates].sort((a, b) =>
+        new Date(a.date) - new Date(b.date)
+      );
+
+      const ranges = [];
+      let currentRange = { start: sorted[0].date, end: sorted[0].date, count: 1 };
+
+      for (let i = 1; i < sorted.length; i++) {
+        const prevDate = new Date(sorted[i - 1].date);
+        const currDate = new Date(sorted[i].date);
+        const diffDays = (currDate - prevDate) / (1000 * 60 * 60 * 24);
+
+        if (diffDays === 1) {
+          // Consecutive day - extend range
+          currentRange.end = sorted[i].date;
+          currentRange.count++;
+        } else {
+          // Gap found - start new range
+          ranges.push(currentRange);
+          currentRange = { start: sorted[i].date, end: sorted[i].date, count: 1 };
+        }
+      }
+      ranges.push(currentRange);
+
+      return ranges;
     }
   },
   mounted() {
@@ -720,6 +957,12 @@ const AdminPanel = {
     this.fetchUsers();
   },
   methods: {
+    formatDateString(date) {
+      const year = date.getFullYear();
+      const month = String(date.getMonth() + 1).padStart(2, '0');
+      const day = String(date.getDate()).padStart(2, '0');
+      return `${year}-${month}-${day}`;
+    },
     loadUserInfo() {
       const user = JSON.parse(localStorage.getItem('user') || '{}');
       this.userName = user.name || 'Admin';
@@ -916,6 +1159,35 @@ const AdminPanel = {
         const aptDate = aptDateObj.toISOString().split('T')[0];
         return aptDate === date;
       });
+    },
+    isDateBlocked(date) {
+      return this.allBlockedDates.some(blocked => blocked.date === date);
+    },
+    async fetchAllBlockedDates() {
+      try {
+        const token = localStorage.getItem('token');
+
+        // Get all technicians
+        const techsResponse = await axios.get('/api/technicians', {
+          headers: { Authorization: `Bearer ${token}` }
+        });
+
+        // Fetch blocked dates for all technicians in parallel
+        const promises = techsResponse.data.map(tech =>
+          axios.get('/api/technician-schedule/blocked', {
+            params: { technician_id: tech.id },
+            headers: { Authorization: `Bearer ${token}` }
+          }).catch(() => ({ data: { blocked_dates: [] } }))
+        );
+
+        const results = await Promise.all(promises);
+
+        // Flatten all blocked dates
+        this.allBlockedDates = results.flatMap(r => r.data.blocked_dates);
+      } catch (err) {
+        console.error('Error fetching blocked dates:', err);
+        this.allBlockedDates = [];
+      }
     },
     logout() {
       localStorage.removeItem('token');
@@ -1147,6 +1419,207 @@ const AdminPanel = {
         .catch(err => {
           alert(err.response?.data?.message || 'Αποτυχία διαγραφής ραντεβού');
         });
+    },
+
+    // Working Hours Management
+    async loadWorkingHours() {
+      if (!this.selectedTechnicianForHours) {
+        this.resetWorkingHoursForm();
+        return;
+      }
+
+      try {
+        const token = localStorage.getItem('token');
+        const response = await axios.get('/api/working-hours', {
+          params: { technician_id: this.selectedTechnicianForHours },
+          headers: { Authorization: `Bearer ${token}` }
+        });
+
+        const workingHours = response.data.working_hours;
+
+        // Reset form to defaults
+        this.resetWorkingHoursForm();
+
+        // Populate form with existing data
+        if (workingHours && workingHours.length > 0) {
+          workingHours.forEach(wh => {
+            const index = wh.day_of_week;
+            if (index >= 0 && index < 7) {
+              this.workingHoursForm[index] = {
+                day_of_week: wh.day_of_week,
+                start_time: wh.start_time.substring(0, 5),
+                end_time: wh.end_time.substring(0, 5),
+                is_active: wh.is_active
+              };
+            }
+          });
+        }
+
+        // Load blocked dates as well
+        await this.loadBlockedDates();
+      } catch (err) {
+        console.error('Error loading working hours:', err);
+        alert(err.response?.data?.message || 'Αποτυχία φόρτωσης ωραρίου');
+      }
+    },
+
+    async saveWorkingHours() {
+      if (!this.selectedTechnicianForHours) {
+        alert('Παρακαλώ επιλέξτε τεχνικό');
+        return;
+      }
+
+      // Time format validation regex (HH:MM in 24-hour format)
+      const timePattern = /^([01]?[0-9]|2[0-3]):[0-5][0-9]$/;
+
+      // Validate active days have valid times
+      for (let i = 0; i < this.workingHoursForm.length; i++) {
+        const day = this.workingHoursForm[i];
+        if (day.is_active) {
+          if (!day.start_time || !day.end_time) {
+            alert(`Παρακαλώ ορίστε ώρες για ${this.weekDays[i].name}`);
+            return;
+          }
+          // Validate time format
+          if (!timePattern.test(day.start_time)) {
+            alert(`Μη έγκυρη μορφή ώρας έναρξης για ${this.weekDays[i].name}. Χρησιμοποιήστε 24ωρη μορφή (π.χ. 09:00)`);
+            return;
+          }
+          if (!timePattern.test(day.end_time)) {
+            alert(`Μη έγκυρη μορφή ώρας λήξης για ${this.weekDays[i].name}. Χρησιμοποιήστε 24ωρη μορφή (π.χ. 17:00)`);
+            return;
+          }
+          if (day.start_time >= day.end_time) {
+            alert(`Η ώρα έναρξης πρέπει να είναι πριν την ώρα λήξης για ${this.weekDays[i].name}`);
+            return;
+          }
+        }
+      }
+
+      this.savingWorkingHours = true;
+
+      try {
+        const token = localStorage.getItem('token');
+        await axios.post('/api/working-hours', {
+          technician_id: this.selectedTechnicianForHours,
+          working_hours: this.workingHoursForm
+        }, {
+          headers: { Authorization: `Bearer ${token}` }
+        });
+
+        alert('Το ωράριο εργασίας αποθηκεύτηκε επιτυχώς!');
+      } catch (err) {
+        console.error('Error saving working hours:', err);
+        alert(err.response?.data?.message || 'Αποτυχία αποθήκευσης ωραρίου');
+      } finally {
+        this.savingWorkingHours = false;
+      }
+    },
+
+    resetWorkingHoursForm() {
+      this.workingHoursForm = [
+        { day_of_week: 0, start_time: '09:00', end_time: '17:00', is_active: false },
+        { day_of_week: 1, start_time: '09:00', end_time: '17:00', is_active: true },
+        { day_of_week: 2, start_time: '09:00', end_time: '17:00', is_active: true },
+        { day_of_week: 3, start_time: '09:00', end_time: '17:00', is_active: true },
+        { day_of_week: 4, start_time: '09:00', end_time: '17:00', is_active: true },
+        { day_of_week: 5, start_time: '09:00', end_time: '17:00', is_active: true },
+        { day_of_week: 6, start_time: '09:00', end_time: '17:00', is_active: false }
+      ];
+    },
+
+    // Blocked Dates Management
+    async loadBlockedDates() {
+      if (!this.selectedTechnicianForHours) {
+        this.blockedDates = [];
+        return;
+      }
+
+      try {
+        const token = localStorage.getItem('token');
+        const response = await axios.get('/api/technician-schedule/blocked', {
+          params: { technician_id: this.selectedTechnicianForHours },
+          headers: { Authorization: `Bearer ${token}` }
+        });
+
+        this.blockedDates = response.data.blocked_dates;
+      } catch (err) {
+        console.error('Error loading blocked dates:', err);
+      }
+    },
+
+    async blockDates() {
+      if (!this.canBlockDates) return;
+
+      this.blockingDates = true;
+
+      try {
+        const token = localStorage.getItem('token');
+        await axios.post('/api/technician-schedule', {
+          technician_id: this.selectedTechnicianForHours,
+          start_date: this.blockDatesForm.start_date,
+          end_date: this.blockDatesForm.end_date,
+          start_time: '00:00',
+          end_time: '23:59',
+          is_available: false,
+          reason: 'Μη διαθέσιμος'
+        }, {
+          headers: { Authorization: `Bearer ${token}` }
+        });
+
+        alert('Οι ημερομηνίες αποκλείστηκαν επιτυχώς!');
+
+        // Reset form and reload
+        this.blockDatesForm.start_date = '';
+        this.blockDatesForm.end_date = '';
+        await this.loadBlockedDates();
+      } catch (err) {
+        console.error('Error blocking dates:', err);
+        alert(err.response?.data?.message || 'Αποτυχία αποκλεισμού ημερομηνιών');
+      } finally {
+        this.blockingDates = false;
+      }
+    },
+
+    async removeBlockedRange(range) {
+      if (!confirm(`Θέλετε να αφαιρέσετε τον αποκλεισμό για ${this.formatDateRange(range.start, range.end)};`)) {
+        return;
+      }
+
+      try {
+        const token = localStorage.getItem('token');
+        await axios.delete('/api/technician-schedule/range', {
+          params: {
+            technician_id: this.selectedTechnicianForHours,
+            start_date: range.start,
+            end_date: range.end
+          },
+          headers: { Authorization: `Bearer ${token}` }
+        });
+
+        alert('Ο αποκλεισμός αφαιρέθηκε επιτυχώς!');
+        await this.loadBlockedDates();
+      } catch (err) {
+        console.error('Error removing blocked dates:', err);
+        alert(err.response?.data?.message || 'Αποτυχία αφαίρεσης αποκλεισμού');
+      }
+    },
+
+    formatDateRange(startDate, endDate) {
+      const start = new Date(startDate);
+      const end = new Date(endDate);
+
+      const formatDate = (date) => date.toLocaleDateString('el-GR', {
+        year: 'numeric',
+        month: 'long',
+        day: 'numeric'
+      });
+
+      if (startDate === endDate) {
+        return formatDate(start);
+      }
+
+      return `${formatDate(start)} - ${formatDate(end)}`;
     }
   }
 };
