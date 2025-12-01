@@ -7,7 +7,6 @@ use App\Models\Appointment;
 use App\Models\Service;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\App;
 
 class AppointmentController extends Controller
 {
@@ -45,9 +44,15 @@ class AppointmentController extends Controller
                 ->map(function ($apt) {
                     return [
                         'id' => $apt->id,
-                        'user' => $apt->user->name ?? 'Unknown',
-                        'service' => $apt->service->name ?? 'Unknown',
-                        'scheduled_at' => $apt->start_time->format('Y-m-d'),
+                        'user' => [
+                            'name' => $apt->user->name ?? 'Unknown'
+                        ],
+                        'service' => [
+                            'name' => $apt->service->name ?? 'Unknown'
+                        ],
+                        'technician_id' => $apt->technician_id,
+                        'date' => $apt->start_time->format('Y-m-d'),
+                        'scheduled_at' => $apt->start_time->format('Y-m-d H:i:s'),
                         'start_time' => $apt->start_time->format('H:i'),
                         'end_time' => $apt->end_time->format('H:i'),
                         'status' => $apt->status,
@@ -168,8 +173,82 @@ class AppointmentController extends Controller
     /**
      * Remove the specified resource from storage.
      */
-    public function destroy(string $id)
+    public function destroy(Request $request, string $id)
     {
-        //
+        $user = $request->user();
+        $appointment = Appointment::findOrFail($id);
+
+        // Only admins or the appointment owner can delete
+        if (!$user->is_admin && $appointment->user_id !== $user->id) {
+            return response()->json(['message' => 'Μη εξουσιοδοτημένη ενέργεια'], 403);
+        }
+
+        $appointment->delete();
+
+        return response()->json([
+            'message' => 'Το ραντεβού διαγράφηκε με επιτυχία'
+        ], 200);
+    }
+
+    /**
+     * Admin creates appointment for a client
+     */
+    public function storeForClient(Request $request)
+    {
+        $admin = $request->user();
+
+        // Only admins can create appointments for clients
+        if (!$admin->is_admin) {
+            return response()->json(['message' => 'Unauthorized'], 403);
+        }
+
+        $request->validate([
+            'user_id' => 'required|exists:users,id',
+            'service_id' => 'required|exists:services,id',
+            'technician_id' => 'required|exists:technicians,id',
+            'date' => 'required|date',
+            'time' => 'required|date_format:H:i',
+        ]);
+
+        // Get service duration
+        $service = Service::findOrFail($request->service_id);
+        $durationMinutes = $service->duration;
+
+        // Parse start and end timestamps
+        $startTime = Carbon::parse($request->date . ' ' . $request->time, config('app.timezone'));
+        $endTime = $startTime->copy()->addMinutes($durationMinutes);
+
+        // Check for overlapping appointments
+        $overlap = Appointment::where('technician_id', $request->technician_id)
+            ->where('status', '!=', 'cancelled')
+            ->where(function ($query) use ($startTime, $endTime) {
+                $query->where(function ($q) use ($startTime, $endTime) {
+                    $q->where('start_time', '<', $endTime)
+                    ->where('end_time', '>', $startTime);
+                });
+            })
+            ->exists();
+
+        if ($overlap) {
+            return response()->json([
+                'message' => 'Η επιλεγμένη ώρα επικαλύπτεται με άλλο ραντεβού.'
+            ], 422);
+        }
+
+        // Save appointment
+        $appointment = Appointment::create([
+            'user_id' => $request->user_id,
+            'service_id' => $request->service_id,
+            'technician_id' => $request->technician_id,
+            'scheduled_at' => $startTime,
+            'start_time' => $startTime,
+            'end_time' => $endTime,
+            'status' => 'pending',
+        ]);
+
+        return response()->json([
+            'message' => 'Το ραντεβού δημιουργήθηκε με επιτυχία',
+            'appointment' => $appointment
+        ], 201);
     }
 }

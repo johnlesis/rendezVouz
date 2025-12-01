@@ -4,32 +4,32 @@ const Dashboard = {
       <div class="container mx-auto max-w-6xl">
 
         <div class="flex justify-between items-center mb-6">
-          <h2 class="text-3xl font-bold">Dashboard</h2>
+          <h2 class="text-3xl font-bold">Πίνακας Ελέγχου</h2>
           <button @click="logout" class="bg-red-500 text-white px-4 py-2 rounded-md hover:bg-red-600 transition-colors">
-            Logout
+            Αποσύνδεση
           </button>
         </div>
 
         <!-- Book Appointment Section -->
         <div class="bg-white p-6 md:p-8 rounded-lg shadow-md mb-6">
-          <h3 class="text-2xl font-bold mb-6">Book Appointment</h3>
+          <h3 class="text-2xl font-bold mb-6">Κλείστε Ραντεβού</h3>
 
           <!-- Step 1: Service -->
           <div class="mb-4">
-            <label class="block text-gray-700 mb-2 font-medium">1. Select Service</label>
+            <label class="block text-gray-700 mb-2 font-medium">1. Επιλέξτε Υπηρεσία</label>
             <select v-model="appointment.service_id" @change="resetSelection" class="w-full px-4 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-400">
-              <option disabled value="">-- Choose a service --</option>
+              <option disabled value="">-- Επιλέξτε μια υπηρεσία --</option>
               <option v-for="service in services" :key="service.id" :value="service.id">
-                {{ service.name }} - {{ service.price }} - {{ service.duration }} min
+                {{ service.name }} - {{ service.price }} - {{ service.duration }} λεπτά
               </option>
             </select>
           </div>
 
           <!-- Step 2: Technician -->
           <div class="mb-4" v-if="appointment.service_id">
-            <label class="block text-gray-700 mb-2 font-medium">2. Select Technician</label>
+            <label class="block text-gray-700 mb-2 font-medium">2. Επιλέξτε Τεχνικό</label>
             <select v-model="appointment.technician_id" @change="resetDayAndTime" class="w-full px-4 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-400">
-              <option disabled value="">-- Choose a technician --</option>
+              <option disabled value="">-- Επιλέξτε έναν τεχνικό --</option>
               <option v-for="technician in technicians" :key="technician.id" :value="technician.id">
                 {{ technician.name }}
               </option>
@@ -38,7 +38,7 @@ const Dashboard = {
 
           <!-- Step 3: Date -->
           <div class="mb-4" v-if="appointment.technician_id">
-            <label class="block text-gray-700 mb-2 font-medium">3. Select Date</label>
+            <label class="block text-gray-700 mb-2 font-medium">3. Επιλέξτε Ημερομηνία</label>
             <div class="border rounded-lg p-4 bg-gray-50">
               <div class="flex justify-between items-center mb-4">
                 <button @click="previousMonth" class="p-2 hover:bg-gray-200 rounded-full transition-colors">&lt;</button>
@@ -47,7 +47,7 @@ const Dashboard = {
               </div>
 
               <div class="grid grid-cols-7 gap-1 text-center">
-                <div v-for="day in ['Su','Mo','Tu','We','Th','Fr','Sa']" :key="day" class="text-xs font-semibold text-gray-600 py-2">{{ day }}</div>
+                <div v-for="day in ['Κυ','Δε','Τρ','Τε','Πε','Πα','Σα']" :key="day" class="text-xs font-semibold text-gray-600 py-2">{{ day }}</div>
                 <div v-for="day in calendarDays" :key="day.date" @click="selectDate(day)"
                   :class="[
                     'py-2 rounded cursor-pointer transition-colors',
@@ -61,13 +61,13 @@ const Dashboard = {
               </div>
             </div>
             <div v-if="appointment.date" class="mt-2 text-sm text-gray-600">
-              Selected: <span class="font-semibold">{{ formatSelectedDate }}</span>
+              Επιλέχθηκε: <span class="font-semibold">{{ formatSelectedDate }}</span>
             </div>
           </div>
 
           <!-- Step 4: Available Hours -->
           <div v-if="appointment.date" class="mb-4">
-            <label class="block text-gray-700 mb-2 font-medium">4. Select Time</label>
+            <label class="block text-gray-700 mb-2 font-medium">4. Επιλέξτε Ώρα</label>
             <div class="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-5 gap-2">
             <button
               v-for="slot in generateSlotGrid()"
@@ -87,19 +87,19 @@ const Dashboard = {
 
           <!-- Booking Summary -->
           <div v-if="canBook" class="mb-4 p-4 bg-blue-50 border border-blue-200 rounded-md">
-            <h4 class="font-semibold text-blue-900 mb-2">Booking Summary</h4>
+            <h4 class="font-semibold text-blue-900 mb-2">Σύνοψη Κράτησης</h4>
             <div class="text-sm text-blue-800 space-y-1">
-              <p><span class="font-medium">Service:</span> {{ getServiceName(appointment.service_id) }}</p>
-              <p><span class="font-medium">Technician:</span> {{ getTechnicianName(appointment.technician_id) }}</p>
-              <p><span class="font-medium">Date:</span> {{ formatSelectedDate }}</p>
-              <p><span class="font-medium">Time:</span> {{ appointment.time }}</p>
+              <p><span class="font-medium">Υπηρεσία:</span> {{ getServiceName(appointment.service_id) }}</p>
+              <p><span class="font-medium">Τεχνικός:</span> {{ getTechnicianName(appointment.technician_id) }}</p>
+              <p><span class="font-medium">Ημερομηνία:</span> {{ formatSelectedDate }}</p>
+              <p><span class="font-medium">Ώρα:</span> {{ appointment.time }}</p>
             </div>
           </div>
 
           <button @click="bookAppointment"
             :class="['w-full px-4 py-2 rounded-md transition-colors', canBook ? 'bg-green-500 text-white hover:bg-green-600' : 'bg-gray-300 text-gray-500 cursor-not-allowed']"
             :disabled="!canBook">
-            Book Appointment
+            Κλείστε Ραντεβού
           </button>
 
           <p v-if="appointmentError" class="mt-2 text-red-500 text-sm">{{ appointmentError }}</p>
@@ -108,14 +108,14 @@ const Dashboard = {
 
         <!-- My Appointments -->
         <div class="bg-white p-6 md:p-8 rounded-lg shadow-md">
-          <h3 class="text-2xl font-bold mb-6">My Appointments</h3>
+          <h3 class="text-2xl font-bold mb-6">Τα Ραντεβού μου</h3>
 
           <div v-if="loadingAppointments" class="text-center py-8">
-            <p class="text-gray-500">Loading appointments...</p>
+            <p class="text-gray-500">Φόρτωση ραντεβού...</p>
           </div>
 
           <div v-else-if="appointments.length === 0" class="text-center py-8">
-            <p class="text-gray-500">No appointments found.</p>
+            <p class="text-gray-500">Δεν βρέθηκαν ραντεβού.</p>
           </div>
 
           <div v-else class="space-y-3">
@@ -124,7 +124,7 @@ const Dashboard = {
                 <div class="flex-1">
                   <p class="font-semibold text-lg">{{ apt.service }}</p>
                   <p class="text-gray-600 text-sm mt-1">{{ apt.start_time }}</p>
-                  <p class="text-sm text-gray-500 mt-1">Status: <span class="font-medium">{{ apt.status }}</span></p>
+                  <p class="text-sm text-gray-500 mt-1">Κατάσταση: <span class="font-medium">{{ apt.status }}</span></p>
                 </div>
                 <span class="px-3 py-1 rounded-full text-xs font-semibold self-start" :class="getStatusClass(apt.status)">
                   {{ apt.status }}
@@ -141,6 +141,7 @@ const Dashboard = {
       services: [],
       technicians: [],
       appointments: [],
+      allBookedSlots: [],
       loadingAppointments: false,
       appointment: { service_id: '', technician_id: '', date: '', time: '' },
       availableHours: [],
@@ -235,9 +236,8 @@ const Dashboard = {
     let currentTime = this.timeStringToMinutes(workingStart);
     const endTime = this.timeStringToMinutes(workingEnd);
 
-    // Get appointments for selected technician and date, sorted by start time
-    const booked = this.appointments
-      .filter(a => a.technician_id === this.appointment.technician_id && a.date === this.appointment.date)
+    // Use allBookedSlots instead of appointments to check all booked times
+    const booked = this.allBookedSlots
       .map(a => ({
         start: this.timeStringToMinutes(a.start_time),
         end: this.timeStringToMinutes(a.end_time)
@@ -287,12 +287,14 @@ const Dashboard = {
       this.appointment.date = day.date;
       this.appointment.time = '';
       this.fetchTechnicianSchedule();
+      this.fetchAllBookedSlots();
     },
     resetSelection() {
       this.appointment.technician_id = '';
       this.appointment.date = '';
       this.appointment.time = '';
       this.technicianSchedule = null;
+      this.allBookedSlots = [];
       const today = new Date();
       this.currentMonth = today.getMonth();
       this.currentYear = today.getFullYear();
@@ -301,16 +303,17 @@ const Dashboard = {
       this.appointment.date = '';
       this.appointment.time = '';
       this.technicianSchedule = null;
+      this.allBookedSlots = [];
     },
     fetchServices() {
       axios.get('/api/services')
         .then(res => { this.services = res.data; })
-        .catch(() => { this.appointmentError = 'Failed to load services'; });
+        .catch(() => { this.appointmentError = 'Αποτυχία φόρτωσης υπηρεσιών'; });
     },
     fetchTechnicians() {
       axios.get('/api/technicians')
         .then(res => { this.technicians = res.data; })
-        .catch(() => { this.appointmentError = 'Failed to load technicians'; });
+        .catch(() => { this.appointmentError = 'Αποτυχία φόρτωσης τεχνικών'; });
     },
     fetchAppointments() {
       this.loadingAppointments = true;
@@ -328,13 +331,19 @@ const Dashboard = {
       this.appointmentError = '';
       axios.get('/api/technician-schedule', { params: { technician_id: this.appointment.technician_id, date: this.appointment.date } })
         .then(res => { this.technicianSchedule = res.data; })
-        .catch(err => { this.appointmentError = err.response?.data?.message || 'Failed to fetch schedule'; });
+        .catch(err => { this.appointmentError = err.response?.data?.message || 'Αποτυχία λήψης προγράμματος'; });
+    },
+    fetchAllBookedSlots() {
+      if (!this.appointment.technician_id || !this.appointment.date) return;
+      axios.get('/api/appointments', { params: { technician_id: this.appointment.technician_id, date: this.appointment.date } })
+        .then(res => { this.allBookedSlots = res.data; })
+        .catch(() => { this.allBookedSlots = []; });
     },
     bookAppointment() {
-      if (!this.canBook) { this.appointmentError = 'Please fill in all fields'; return; }
+      if (!this.canBook) { this.appointmentError = 'Παρακαλώ συμπληρώστε όλα τα πεδία'; return; }
       axios.post('/api/appointments', this.appointment)
         .then(() => {
-          this.appointmentSuccess = 'Appointment booked successfully!';
+          this.appointmentSuccess = 'Το ραντεβού κλείστηκε με επιτυχία!';
           this.appointmentError = '';
           this.appointment = { service_id: '', technician_id: '', date: '', time: '' };
           this.technicianSchedule = null;
@@ -343,10 +352,10 @@ const Dashboard = {
           this.currentYear = today.getFullYear();
           this.fetchAppointments();
         })
-        .catch(err => { this.appointmentError = err.response?.data?.message || 'Failed to book appointment'; this.appointmentSuccess = ''; });
+        .catch(err => { this.appointmentError = err.response?.data?.message || 'Αποτυχία κλεισίματος ραντεβού'; this.appointmentSuccess = ''; });
     },
-    getServiceName(id) { return this.services.find(s => s.id == id)?.name || 'Unknown Service'; },
-    getTechnicianName(id) { return this.technicians.find(t => t.id === id)?.name || 'Unknown Technician'; },
+    getServiceName(id) { return this.services.find(s => s.id == id)?.name || 'Άγνωστη Υπηρεσία'; },
+    getTechnicianName(id) { return this.technicians.find(t => t.id === id)?.name || 'Άγνωστος Τεχνικός'; },
     getStatusClass(status) {
       return { 'pending': 'bg-yellow-100 text-yellow-800', 'confirmed': 'bg-green-100 text-green-800', 'completed': 'bg-blue-100 text-blue-800', 'cancelled': 'bg-red-100 text-red-800' }[status] || 'bg-gray-100 text-gray-800';
     }
