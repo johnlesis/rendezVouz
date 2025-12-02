@@ -4,28 +4,28 @@ const Dashboard = {
     <div class="container mx-auto max-w-6xl">
 
       <!-- Header -->
-      <div class="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-2 mb-4 sm:mb-6">
-        <h2 class="text-lg sm:text-2xl md:text-3xl font-bold">Rendez-Vous</h2>
+      <div class="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-3 sm:gap-4 mb-4 sm:mb-6">
+        <h2 class="text-xl sm:text-2xl md:text-3xl font-bold">Rendez-Vous</h2>
 
-        <button 
-          @click="logout" 
-          class="self-start sm:self-auto bg-red-500 text-white px-3 py-2 text-sm sm:text-base rounded-lg hover:bg-red-600 transition-colors"
+        <button
+          @click="logout"
+          class="self-start sm:self-auto bg-red-500 text-white px-4 py-3 sm:px-3 sm:py-2 text-base sm:text-sm rounded-lg hover:bg-red-600 active:bg-red-700 transition-colors min-h-[44px] sm:min-h-0"
         >
           Αποσύνδεση
         </button>
       </div>
 
       <!-- Book Appointment Section -->
-      <div class="bg-white p-3 sm:p-4 md:p-6 rounded-lg shadow-md mb-4 sm:mb-6">
-        <h3 class="text-lg sm:text-xl md:text-2xl font-bold mb-4">Κλείστε Ραντεβού</h3>
+      <div class="bg-white p-4 sm:p-5 md:p-6 rounded-lg shadow-md mb-4 sm:mb-6">
+        <h3 class="text-xl sm:text-2xl md:text-2xl font-bold mb-4 sm:mb-5">Κλείστε Ραντεβού</h3>
 
         <!-- Step 1 Service -->
-        <div class="mb-4">
-          <label class="block text-gray-700 mb-2 text-sm sm:text-base font-medium">1. Επιλέξτε Υπηρεσία</label>
-          <select 
-            v-model="appointment.service_id" 
+        <div class="mb-4 sm:mb-5">
+          <label class="block text-gray-700 mb-2 text-base sm:text-base font-medium">1. Επιλέξτε Υπηρεσία</label>
+          <select
+            v-model="appointment.service_id"
             @change="resetSelection"
-            class="w-full px-3 py-2 text-sm sm:text-base border rounded-md focus:ring-2 focus:ring-blue-400"
+            class="w-full px-3 py-3 sm:px-3 sm:py-2 text-base sm:text-base border rounded-lg sm:rounded-md focus:ring-2 focus:ring-blue-400 min-h-[44px]"
           >
             <option disabled value="">Επιλέξτε υπηρεσία</option>
             <option v-for="service in services" :key="service.id" :value="service.id">
@@ -35,12 +35,12 @@ const Dashboard = {
         </div>
 
         <!-- Step 2 Technician -->
-        <div class="mb-4" v-if="appointment.service_id">
-          <label class="block text-gray-700 mb-2 text-sm sm:text-base font-medium">2. Επιλέξτε Τεχνικό</label>
-          <select 
-            v-model="appointment.technician_id" 
+        <div class="mb-4 sm:mb-5" v-if="appointment.service_id">
+          <label class="block text-gray-700 mb-2 text-base sm:text-base font-medium">2. Επιλέξτε Τεχνικό</label>
+          <select
+            v-model="appointment.technician_id"
             @change="resetDayAndTime"
-            class="w-full px-3 py-2 text-sm sm:text-base border rounded-md focus:ring-2 focus:ring-blue-400"
+            class="w-full px-3 py-3 sm:px-3 sm:py-2 text-base sm:text-base border rounded-lg sm:rounded-md focus:ring-2 focus:ring-blue-400 min-h-[44px]"
           >
             <option disabled value="">Επιλέξτε τεχνικό</option>
             <option v-for="technician in technicians" :key="technician.id" :value="technician.id">
@@ -50,35 +50,36 @@ const Dashboard = {
         </div>
 
         <!-- Step 3 Date -->
-        <div class="mb-4" v-if="appointment.technician_id">
-          <label class="block text-gray-700 mb-2 text-sm sm:text-base font-medium">3. Επιλέξτε Ημερομηνία</label>
+        <div class="mb-4 sm:mb-5" v-if="appointment.technician_id">
+          <label class="block text-gray-700 mb-2 text-base sm:text-base font-medium">3. Επιλέξτε Ημερομηνία</label>
 
-          <div class="border rounded-lg p-2 sm:p-4 bg-gray-50">
-            <div class="flex justify-between items-center mb-2">
-              <button @click="previousMonth" class="p-2 hover:bg-gray-200 rounded-full">&lt;</button>
-              <h4 class="text-xs sm:text-base font-semibold">{{ currentMonthYear }}</h4>
-              <button @click="nextMonth" class="p-2 hover:bg-gray-200 rounded-full">&gt;</button>
+          <div class="border rounded-lg p-3 sm:p-4 bg-gray-50">
+            <div class="flex justify-between items-center mb-3 sm:mb-4">
+              <button @click="previousMonth" class="p-3 sm:p-2 hover:bg-gray-200 rounded-full transition-colors min-w-[44px] min-h-[44px]">&lt;</button>
+              <h4 class="text-base sm:text-base font-semibold">{{ currentMonthYear }}</h4>
+              <button @click="nextMonth" class="p-3 sm:p-2 hover:bg-gray-200 rounded-full transition-colors min-w-[44px] min-h-[44px]">&gt;</button>
             </div>
 
             <!-- Calendar Grid -->
-            <div class="grid grid-cols-7 gap-1 text-center">
-              <div 
-                v-for="day in ['Δε','Τρ','Τε','Πε','Πα','Σα','Κυ']" 
-                class="text-[10px] sm:text-xs font-semibold text-gray-600"
+            <div class="grid grid-cols-7 gap-1 sm:gap-1 text-center">
+              <div
+                v-for="day in ['Δε','Τρ','Τε','Πε','Πα','Σα','Κυ']"
+                class="text-xs sm:text-sm font-semibold text-gray-600 py-2"
               >
                 {{ day }}
               </div>
 
-              <div 
-                v-for="day in calendarDays" 
+              <div
+                v-for="day in calendarDays"
                 :key="day.date"
                 @click="selectDate(day)"
                 :class="[
-                  'py-2 rounded text-xs sm:text-base cursor-pointer',
+                  'py-3 sm:py-2 rounded text-base sm:text-sm cursor-pointer transition-colors min-h-[44px] sm:min-h-0 flex items-center justify-center',
                   day.isCurrentMonth ? 'text-gray-900' : 'text-gray-300',
                   day.isToday ? 'bg-blue-100 font-bold' : '',
                   day.isSelected ? 'bg-blue-500 text-white' : 'hover:bg-gray-200',
-                  !day.isCurrentMonth ? 'pointer-events-none' : ''
+                  !day.isCurrentMonth ? 'pointer-events-none' : '',
+                  isDateInvalidForBooking(day.date) ? 'opacity-50 cursor-not-allowed pointer-events-none bg-gray-100' : ''
                 ]"
               >
                 {{ day.day }}
@@ -87,29 +88,29 @@ const Dashboard = {
             </div>
           </div>
 
-          <div v-if="appointment.date" class="mt-2 text-xs sm:text-sm">
+          <div v-if="appointment.date" class="mt-2 text-sm sm:text-sm">
             Επιλέχθηκε: <span class="font-semibold">{{ formatSelectedDate }}</span>
           </div>
         </div>
 
         <!-- Step 4 Hours -->
-        <div v-if="appointment.date" class="mb-4">
-          <label class="block text-gray-700 mb-2 text-sm sm:text-base font-medium">4. Επιλέξτε Ώρα</label>
+        <div v-if="appointment.date" class="mb-4 sm:mb-5">
+          <label class="block text-gray-700 mb-2 text-base sm:text-base font-medium">4. Επιλέξτε Ώρα</label>
 
           <!-- Responsive button grid -->
-          <div class="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-5 gap-2">
+          <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-2 sm:gap-2">
             <button
               v-for="slot in generateSlotGrid()"
               :key="slot.time"
               @click="selectSlot(slot)"
               :disabled="slot.isBooked"
               :class="[
-                'py-2 text-xs sm:text-sm border rounded-lg transition-colors',
-                appointment.time === slot.time 
-                  ? 'bg-green-500 text-white border-green-500' 
-                  : 'bg-white hover:bg-green-50',
-                slot.isBooked 
-                  ? 'bg-gray-200 text-gray-400 cursor-not-allowed' 
+                'py-3 sm:py-2 text-base sm:text-sm border rounded-lg transition-colors min-h-[44px]',
+                appointment.time === slot.time
+                  ? 'bg-green-500 text-white border-green-500 font-medium'
+                  : 'bg-white hover:bg-green-50 active:bg-green-100',
+                slot.isBooked
+                  ? 'bg-gray-200 text-gray-400 cursor-not-allowed'
                   : ''
               ]"
             >
@@ -119,23 +120,23 @@ const Dashboard = {
         </div>
 
         <!-- Summary -->
-        <div 
-          v-if="canBook" 
-          class="mb-4 p-3 bg-blue-50 border border-blue-200 rounded-lg text-sm"
+        <div
+          v-if="canBook"
+          class="mb-4 p-4 sm:p-3 bg-blue-50 border border-blue-200 rounded-lg text-base sm:text-sm"
         >
           <h4 class="font-semibold text-blue-900 mb-2">Σύνοψη Κράτησης</h4>
-          <p><strong>Υπηρεσία:</strong> {{ getServiceName(appointment.service_id) }}</p>
-          <p><strong>Τεχνικός:</strong> {{ getTechnicianName(appointment.technician_id) }}</p>
-          <p><strong>Ημερομηνία:</strong> {{ formatSelectedDate }}</p>
+          <p class="mb-1"><strong>Υπηρεσία:</strong> {{ getServiceName(appointment.service_id) }}</p>
+          <p class="mb-1"><strong>Τεχνικός:</strong> {{ getTechnicianName(appointment.technician_id) }}</p>
+          <p class="mb-1"><strong>Ημερομηνία:</strong> {{ formatSelectedDate }}</p>
           <p><strong>Ώρα:</strong> {{ appointment.time }}</p>
         </div>
 
-        <button 
+        <button
           @click="bookAppointment"
           :disabled="!canBook"
           :class="[
-            'w-full py-2 text-sm sm:text-base rounded-lg font-medium transition-colors',
-            canBook ? 'bg-green-500 text-white hover:bg-green-600' : 'bg-gray-300 text-gray-500'
+            'w-full py-4 sm:py-3 text-base sm:text-base rounded-lg font-medium transition-colors min-h-[48px]',
+            canBook ? 'bg-green-500 text-white hover:bg-green-600 active:bg-green-700' : 'bg-gray-300 text-gray-500 cursor-not-allowed'
           ]"
         >
           Κλείστε Ραντεβού
@@ -146,23 +147,23 @@ const Dashboard = {
       </div>
 
       <!-- My Appointments -->
-      <div class="bg-white p-3 sm:p-4 md:p-6 rounded-lg shadow-md">
-        <h3 class="text-lg sm:text-xl md:text-2xl font-bold mb-4">Τα Ραντεβού μου</h3>
+      <div class="bg-white p-4 sm:p-5 md:p-6 rounded-lg shadow-md">
+        <h3 class="text-xl sm:text-2xl md:text-2xl font-bold mb-4 sm:mb-5">Τα Ραντεβού μου</h3>
 
-        <div v-if="loadingAppointments" class="text-center py-8 text-gray-500 text-sm">
+        <div v-if="loadingAppointments" class="text-center py-8 text-gray-500 text-sm sm:text-base">
           Φόρτωση ραντεβού...
         </div>
 
-        <div v-else-if="appointments.length === 0" class="text-center py-8 text-gray-500 text-sm">
+        <div v-else-if="appointments.length === 0" class="text-center py-8 text-gray-500 text-sm sm:text-base">
           Δεν βρέθηκαν ραντεβού.
         </div>
 
         <!-- Appointment cards -->
-        <div v-else class="space-y-3">
-          <div 
+        <div v-else class="space-y-3 sm:space-y-3">
+          <div
             v-for="apt in appointments"
             :key="apt.id"
-            class="p-3 sm:p-4 border rounded-lg hover:shadow-md transition-all"
+            class="p-4 sm:p-4 border rounded-lg hover:shadow-md transition-all"
           >
             <div class="flex flex-col sm:flex-row sm:justify-between gap-2">
               <div class="flex-1 min-w-0">
@@ -344,8 +345,21 @@ const Dashboard = {
     },
     selectDate(day) {
       if (!day.isCurrentMonth) return;
+
+      // Prevent selecting today or past dates
+      const selectedDate = new Date(day.date);
+      const today = new Date();
+      today.setHours(0, 0, 0, 0);
+      selectedDate.setHours(0, 0, 0, 0);
+
+      if (selectedDate <= today) {
+        this.appointmentError = 'Δεν μπορείτε να κλείσετε ραντεβού για σήμερα ή παρελθόντες ημερομηνίες';
+        return;
+      }
+
       this.appointment.date = day.date;
       this.appointment.time = '';
+      this.appointmentError = '';
       this.fetchTechnicianSchedule();
       this.fetchAllBookedSlots();
     },
@@ -418,6 +432,13 @@ const Dashboard = {
     getTechnicianName(id) { return this.technicians.find(t => t.id === id)?.name || 'Άγνωστος Τεχνικός'; },
     getStatusClass(status) {
       return { 'pending': 'bg-yellow-100 text-yellow-800', 'confirmed': 'bg-green-100 text-green-800', 'completed': 'bg-blue-100 text-blue-800', 'cancelled': 'bg-red-100 text-red-800' }[status] || 'bg-gray-100 text-gray-800';
+    },
+    isDateInvalidForBooking(dateString) {
+      const date = new Date(dateString);
+      const today = new Date();
+      today.setHours(0, 0, 0, 0);
+      date.setHours(0, 0, 0, 0);
+      return date <= today;
     }
   }
 };
