@@ -1,5 +1,6 @@
 const AdminPanel = {
   template: `
+  <div class="min-h-screen bg-gray-100 p-4 md:p-6 text-base">
     <div class="min-h-screen bg-gray-100 p-4 md:p-6">
       <div class="container mx-auto max-w-7xl">
 

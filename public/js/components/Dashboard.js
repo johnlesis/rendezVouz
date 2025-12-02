@@ -1,142 +1,192 @@
 const Dashboard = {
   template: `
-    <div class="min-h-screen bg-gray-100 p-3 sm:p-4 md:p-6">
-      <div class="container mx-auto max-w-6xl">
+  <div class="min-h-screen bg-gray-100 p-2 sm:p-4 md:p-6">
+    <div class="container mx-auto max-w-6xl">
 
-        <div class="flex justify-between items-center mb-4 sm:mb-6">
-          <h2 class="text-xl sm:text-2xl md:text-3xl font-bold">Rendez-Vous</h2>
-          <button @click="logout" class="bg-red-500 text-white px-3 py-1.5 text-sm sm:px-4 sm:py-2 sm:text-base rounded-md hover:bg-red-600 transition-colors">
-            Αποσύνδεση
-          </button>
+      <!-- Header -->
+      <div class="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-2 mb-4 sm:mb-6">
+        <h2 class="text-lg sm:text-2xl md:text-3xl font-bold">Rendez-Vous</h2>
+
+        <button 
+          @click="logout" 
+          class="self-start sm:self-auto bg-red-500 text-white px-3 py-2 text-sm sm:text-base rounded-lg hover:bg-red-600 transition-colors"
+        >
+          Αποσύνδεση
+        </button>
+      </div>
+
+      <!-- Book Appointment Section -->
+      <div class="bg-white p-3 sm:p-4 md:p-6 rounded-lg shadow-md mb-4 sm:mb-6">
+        <h3 class="text-lg sm:text-xl md:text-2xl font-bold mb-4">Κλείστε Ραντεβού</h3>
+
+        <!-- Step 1 Service -->
+        <div class="mb-4">
+          <label class="block text-gray-700 mb-2 text-sm sm:text-base font-medium">1. Επιλέξτε Υπηρεσία</label>
+          <select 
+            v-model="appointment.service_id" 
+            @change="resetSelection"
+            class="w-full px-3 py-2 text-sm sm:text-base border rounded-md focus:ring-2 focus:ring-blue-400"
+          >
+            <option disabled value="">Επιλέξτε υπηρεσία</option>
+            <option v-for="service in services" :key="service.id" :value="service.id">
+              {{ service.name }}
+            </option>
+          </select>
         </div>
 
-        <!-- Book Appointment Section -->
-        <div class="bg-white p-3 sm:p-4 md:p-6 lg:p-8 rounded-lg shadow-md mb-4 sm:mb-6">
-          <h3 class="text-lg sm:text-xl md:text-2xl font-bold mb-4 sm:mb-6">Κλείστε Ραντεβού</h3>
+        <!-- Step 2 Technician -->
+        <div class="mb-4" v-if="appointment.service_id">
+          <label class="block text-gray-700 mb-2 text-sm sm:text-base font-medium">2. Επιλέξτε Τεχνικό</label>
+          <select 
+            v-model="appointment.technician_id" 
+            @change="resetDayAndTime"
+            class="w-full px-3 py-2 text-sm sm:text-base border rounded-md focus:ring-2 focus:ring-blue-400"
+          >
+            <option disabled value="">Επιλέξτε τεχνικό</option>
+            <option v-for="technician in technicians" :key="technician.id" :value="technician.id">
+              {{ technician.name }}
+            </option>
+          </select>
+        </div>
 
-          <!-- Step 1: Service -->
-          <div class="mb-3 sm:mb-4">
-            <label class="block text-gray-700 mb-2 text-sm sm:text-base font-medium">1. Επιλέξτε Υπηρεσία</label>
-            <select v-model="appointment.service_id" @change="resetSelection" class="w-full px-3 py-2 text-sm sm:px-4 sm:text-base border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-400">
-              <option disabled value=""> Επιλέξτε μια υπηρεσία </option>
-              <option v-for="service in services" :key="service.id" :value="service.id">
-                {{ service.name }}
-              </option>
-            </select>
-          </div>
+        <!-- Step 3 Date -->
+        <div class="mb-4" v-if="appointment.technician_id">
+          <label class="block text-gray-700 mb-2 text-sm sm:text-base font-medium">3. Επιλέξτε Ημερομηνία</label>
 
-          <!-- Step 2: Technician -->
-          <div class="mb-3 sm:mb-4" v-if="appointment.service_id">
-            <label class="block text-gray-700 mb-2 text-sm sm:text-base font-medium">2. Επιλέξτε Τεχνικό</label>
-            <select v-model="appointment.technician_id" @change="resetDayAndTime" class="w-full px-3 py-2 text-sm sm:px-4 sm:text-base border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-400">
-              <option disabled value=""> Επιλέξτε έναν τεχνικό </option>
-              <option v-for="technician in technicians" :key="technician.id" :value="technician.id">
-                {{ technician.name }}
-              </option>
-            </select>
-          </div>
-
-          <!-- Step 3: Date -->
-          <div class="mb-3 sm:mb-4" v-if="appointment.technician_id">
-            <label class="block text-gray-700 mb-2 text-sm sm:text-base font-medium">3. Επιλέξτε Ημερομηνία</label>
-            <div class="border rounded-lg p-2 sm:p-4 bg-gray-50">
-              <div class="flex justify-between items-center mb-2 sm:mb-4">
-                <button @click="previousMonth" class="p-1.5 sm:p-2 hover:bg-gray-200 rounded-full transition-colors">&lt;</button>
-                <h4 class="text-sm sm:text-base md:text-lg font-semibold">{{ currentMonthYear }}</h4>
-                <button @click="nextMonth" class="p-1.5 sm:p-2 hover:bg-gray-200 rounded-full transition-colors">&gt;</button>
-              </div>
-
-              <div class="grid grid-cols-7 gap-0.5 sm:gap-1 text-center">
-                <div v-for="day in ['Δε','Τρ','Τε','Πε','Πα','Σα','Κυ']" :key="day" class="text-[10px] sm:text-xs font-semibold text-gray-600 py-1 sm:py-2">{{ day }}</div>
-                <div v-for="day in calendarDays" :key="day.date" @click="selectDate(day)"
-                  :class="[
-                    'py-1 sm:py-2 rounded cursor-pointer transition-colors text-xs sm:text-base',
-                    day.isCurrentMonth ? 'text-gray-900' : 'text-gray-300',
-                    day.isToday ? 'bg-blue-100 font-bold' : '',
-                    day.isSelected ? 'bg-blue-500 text-white' : 'hover:bg-gray-200',
-                    !day.isCurrentMonth ? 'cursor-not-allowed' : ''
-                  ]">
-                  {{ day.day }}
-                </div>
-              </div>
+          <div class="border rounded-lg p-2 sm:p-4 bg-gray-50">
+            <div class="flex justify-between items-center mb-2">
+              <button @click="previousMonth" class="p-2 hover:bg-gray-200 rounded-full">&lt;</button>
+              <h4 class="text-xs sm:text-base font-semibold">{{ currentMonthYear }}</h4>
+              <button @click="nextMonth" class="p-2 hover:bg-gray-200 rounded-full">&gt;</button>
             </div>
-            <div v-if="appointment.date" class="mt-2 text-sm text-gray-600">
-              Επιλέχθηκε: <span class="font-semibold">{{ formatSelectedDate }}</span>
+
+            <!-- Calendar Grid -->
+            <div class="grid grid-cols-7 gap-1 text-center">
+              <div 
+                v-for="day in ['Δε','Τρ','Τε','Πε','Πα','Σα','Κυ']" 
+                class="text-[10px] sm:text-xs font-semibold text-gray-600"
+              >
+                {{ day }}
+              </div>
+
+              <div 
+                v-for="day in calendarDays" 
+                :key="day.date"
+                @click="selectDate(day)"
+                :class="[
+                  'py-2 rounded text-xs sm:text-base cursor-pointer',
+                  day.isCurrentMonth ? 'text-gray-900' : 'text-gray-300',
+                  day.isToday ? 'bg-blue-100 font-bold' : '',
+                  day.isSelected ? 'bg-blue-500 text-white' : 'hover:bg-gray-200',
+                  !day.isCurrentMonth ? 'pointer-events-none' : ''
+                ]"
+              >
+                {{ day.day }}
+              </div>
+
             </div>
           </div>
 
-          <!-- Step 4: Available Hours -->
-          <div v-if="appointment.date" class="mb-3 sm:mb-4">
-            <label class="block text-gray-700 mb-2 text-sm sm:text-base font-medium">4. Επιλέξτε Ώρα</label>
-            <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-2">
+          <div v-if="appointment.date" class="mt-2 text-xs sm:text-sm">
+            Επιλέχθηκε: <span class="font-semibold">{{ formatSelectedDate }}</span>
+          </div>
+        </div>
+
+        <!-- Step 4 Hours -->
+        <div v-if="appointment.date" class="mb-4">
+          <label class="block text-gray-700 mb-2 text-sm sm:text-base font-medium">4. Επιλέξτε Ώρα</label>
+
+          <!-- Responsive button grid -->
+          <div class="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-5 gap-2">
             <button
               v-for="slot in generateSlotGrid()"
               :key="slot.time"
               @click="selectSlot(slot)"
               :disabled="slot.isBooked"
               :class="[
-                'px-2 py-1.5 text-xs sm:px-3 sm:py-2 sm:text-sm border rounded-md transition-colors',
-                appointment.time === slot.time ? 'bg-green-500 text-white border-green-500' : 'bg-white hover:bg-green-50 hover:border-green-400',
-                slot.isBooked ? 'bg-gray-200 text-gray-400 cursor-not-allowed hover:bg-gray-200' : ''
-              ]">
+                'py-2 text-xs sm:text-sm border rounded-lg transition-colors',
+                appointment.time === slot.time 
+                  ? 'bg-green-500 text-white border-green-500' 
+                  : 'bg-white hover:bg-green-50',
+                slot.isBooked 
+                  ? 'bg-gray-200 text-gray-400 cursor-not-allowed' 
+                  : ''
+              ]"
+            >
               {{ slot.time }}
             </button>
-            </div>
           </div>
-
-
-          <!-- Booking Summary -->
-          <div v-if="canBook" class="mb-3 sm:mb-4 p-3 sm:p-4 bg-blue-50 border border-blue-200 rounded-md">
-            <h4 class="font-semibold text-blue-900 mb-2 text-sm sm:text-base">Σύνοψη Κράτησης</h4>
-            <div class="text-xs sm:text-sm text-blue-800 space-y-1">
-              <p class="truncate"><span class="font-medium">Υπηρεσία:</span> {{ getServiceName(appointment.service_id) }}</p>
-              <p class="truncate"><span class="font-medium">Τεχνικός:</span> {{ getTechnicianName(appointment.technician_id) }}</p>
-              <p class="truncate"><span class="font-medium">Ημερομηνία:</span> {{ formatSelectedDate }}</p>
-              <p><span class="font-medium">Ώρα:</span> {{ appointment.time }}</p>
-            </div>
-          </div>
-
-          <button @click="bookAppointment"
-            :class="['w-full px-3 py-1.5 text-sm sm:px-4 sm:py-2 sm:text-base rounded-md transition-colors font-medium', canBook ? 'bg-green-500 text-white hover:bg-green-600' : 'bg-gray-300 text-gray-500 cursor-not-allowed']"
-            :disabled="!canBook">
-            Κλείστε Ραντεβού
-          </button>
-
-          <p v-if="appointmentError" class="mt-2 text-red-500 text-xs sm:text-sm">{{ appointmentError }}</p>
-          <p v-if="appointmentSuccess" class="mt-2 text-green-500 text-xs sm:text-sm">{{ appointmentSuccess }}</p>
         </div>
 
-        <!-- My Appointments -->
-        <div class="bg-white p-3 sm:p-4 md:p-6 lg:p-8 rounded-lg shadow-md">
-          <h3 class="text-lg sm:text-xl md:text-2xl font-bold mb-4 sm:mb-6">Τα Ραντεβού μου</h3>
+        <!-- Summary -->
+        <div 
+          v-if="canBook" 
+          class="mb-4 p-3 bg-blue-50 border border-blue-200 rounded-lg text-sm"
+        >
+          <h4 class="font-semibold text-blue-900 mb-2">Σύνοψη Κράτησης</h4>
+          <p><strong>Υπηρεσία:</strong> {{ getServiceName(appointment.service_id) }}</p>
+          <p><strong>Τεχνικός:</strong> {{ getTechnicianName(appointment.technician_id) }}</p>
+          <p><strong>Ημερομηνία:</strong> {{ formatSelectedDate }}</p>
+          <p><strong>Ώρα:</strong> {{ appointment.time }}</p>
+        </div>
 
-          <div v-if="loadingAppointments" class="text-center py-6 sm:py-8">
-            <p class="text-gray-500 text-sm sm:text-base">Φόρτωση ραντεβού...</p>
-          </div>
+        <button 
+          @click="bookAppointment"
+          :disabled="!canBook"
+          :class="[
+            'w-full py-2 text-sm sm:text-base rounded-lg font-medium transition-colors',
+            canBook ? 'bg-green-500 text-white hover:bg-green-600' : 'bg-gray-300 text-gray-500'
+          ]"
+        >
+          Κλείστε Ραντεβού
+        </button>
 
-          <div v-else-if="appointments.length === 0" class="text-center py-6 sm:py-8">
-            <p class="text-gray-500 text-sm sm:text-base">Δεν βρέθηκαν ραντεβού.</p>
-          </div>
+        <p v-if="appointmentError" class="mt-2 text-red-500 text-xs">{{ appointmentError }}</p>
+        <p v-if="appointmentSuccess" class="mt-2 text-green-500 text-xs">{{ appointmentSuccess }}</p>
+      </div>
 
-          <div v-else class="space-y-2 sm:space-y-3">
-            <div v-for="apt in appointments" :key="apt.id" class="border rounded-lg p-3 sm:p-4 hover:shadow-md transition-shadow">
-              <div class="flex flex-col sm:flex-row sm:justify-between sm:items-start gap-2 sm:gap-3">
-                <div class="flex-1 min-w-0">
-                  <p class="font-semibold text-base sm:text-lg truncate">{{ apt.service }}</p>
-                  <p class="text-gray-600 text-xs sm:text-sm mt-1">{{ apt.start_time }}</p>
-                  <p class="text-gray-600 text-xs sm:text-sm mt-1">{{ apt.date }}</p>
-                  <p class="text-xs sm:text-sm text-gray-500 mt-1">Κατάσταση: <span class="font-medium">{{ apt.status }}</span></p>
-                </div>
-                <span class="px-2 sm:px-3 py-1 rounded-full text-xs font-semibold self-start whitespace-nowrap" :class="getStatusClass(apt.status)">
-                  {{ apt.status }}
-                </span>
+      <!-- My Appointments -->
+      <div class="bg-white p-3 sm:p-4 md:p-6 rounded-lg shadow-md">
+        <h3 class="text-lg sm:text-xl md:text-2xl font-bold mb-4">Τα Ραντεβού μου</h3>
+
+        <div v-if="loadingAppointments" class="text-center py-8 text-gray-500 text-sm">
+          Φόρτωση ραντεβού...
+        </div>
+
+        <div v-else-if="appointments.length === 0" class="text-center py-8 text-gray-500 text-sm">
+          Δεν βρέθηκαν ραντεβού.
+        </div>
+
+        <!-- Appointment cards -->
+        <div v-else class="space-y-3">
+          <div 
+            v-for="apt in appointments"
+            :key="apt.id"
+            class="p-3 sm:p-4 border rounded-lg hover:shadow-md transition-all"
+          >
+            <div class="flex flex-col sm:flex-row sm:justify-between gap-2">
+              <div class="flex-1 min-w-0">
+                <p class="font-semibold text-sm sm:text-lg truncate">{{ apt.service }}</p>
+                <p class="text-gray-600 text-xs sm:text-sm mt-1">{{ apt.start_time }}</p>
+                <p class="text-gray-600 text-xs sm:text-sm">{{ apt.date }}</p>
+                <p class="text-gray-500 text-xs sm:text-sm">Κατάσταση: {{ apt.status }}</p>
               </div>
+
+              <span 
+                class="px-2 py-1 rounded-full text-xs font-semibold self-start sm:self-auto whitespace-nowrap"
+                :class="getStatusClass(apt.status)"
+              >
+                {{ apt.status }}
+              </span>
             </div>
           </div>
         </div>
       </div>
+
     </div>
-  `,
+  </div>
+`
+,
   data() {
     return {
       services: [],
