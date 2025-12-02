@@ -149,7 +149,7 @@ const AdminPanel = {
             <div>
               <label class="block text-sm sm:text-base font-medium text-gray-700 mb-2">1. Επιλέξτε Πελάτη</label>
               <select v-model="bookingForm.user_id" @change="resetBookingSelection" class="w-full px-3 sm:px-4 py-2 text-sm sm:text-base border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-400" required>
-                <option disabled value="">-- Επιλέξτε πελάτη --</option>
+                <option disabled value=""> Επιλέξτε πελάτη </option>
                 <option v-for="user in users" :key="user.id" :value="user.id">
                   {{ user.name }} ({{ user.email }})
                 </option>
@@ -160,9 +160,9 @@ const AdminPanel = {
             <div v-if="bookingForm.user_id">
               <label class="block text-sm sm:text-base font-medium text-gray-700 mb-2">2. Επιλέξτε Υπηρεσία</label>
               <select v-model="bookingForm.service_id" @change="resetTechnicianAndDateTime" class="w-full px-3 sm:px-4 py-2 text-sm sm:text-base border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-400" required>
-                <option disabled value="">-- Επιλέξτε μια υπηρεσία --</option>
+                <option disabled value=""> Επιλέξτε μια υπηρεσία </option>
                 <option v-for="service in services" :key="service.id" :value="service.id">
-                  {{ service.name }} - {{ service.price }} - {{ service.duration }} λεπτά
+                  {{ service.name }} - {{ service.duration }} λεπτά
                 </option>
               </select>
             </div>
@@ -171,7 +171,7 @@ const AdminPanel = {
             <div v-if="bookingForm.service_id">
               <label class="block text-sm sm:text-base font-medium text-gray-700 mb-2">3. Επιλέξτε Τεχνικό</label>
               <select v-model="bookingForm.technician_id" @change="resetDateTime" class="w-full px-3 sm:px-4 py-2 text-sm sm:text-base border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-400" required>
-                <option disabled value="">-- Επιλέξτε έναν τεχνικό --</option>
+                <option disabled value=""> Επιλέξτε έναν τεχνικό </option>
                 <option v-for="technician in technicians" :key="technician.id" :value="technician.id">
                   {{ technician.name }}
                 </option>
@@ -307,7 +307,6 @@ const AdminPanel = {
             <table class="w-full">
               <thead>
                 <tr class="border-b">
-                  <th class="text-left py-3 px-4 text-sm font-semibold text-gray-700">ID</th>
                   <th class="text-left py-3 px-4 text-sm font-semibold text-gray-700">Όνομα</th>
                   <th class="text-left py-3 px-4 text-sm font-semibold text-gray-700">Ειδίκευση</th>
                   <th class="text-left py-3 px-4 text-sm font-semibold text-gray-700">Κατάσταση</th>
@@ -316,7 +315,6 @@ const AdminPanel = {
               </thead>
               <tbody>
                 <tr v-for="tech in technicians" :key="tech.id" class="border-b hover:bg-gray-50">
-                  <td class="py-3 px-4 text-sm">{{ tech.id }}</td>
                   <td class="py-3 px-4 text-sm">{{ tech.name }}</td>
                   <td class="py-3 px-4 text-sm">{{ tech.specialization || 'N/A' }}</td>
                   <td class="py-3 px-4">
@@ -440,7 +438,6 @@ const AdminPanel = {
             <table class="w-full">
               <thead>
                 <tr class="border-b">
-                  <th class="text-left py-3 px-4 text-sm font-semibold text-gray-700">ID</th>
                   <th class="text-left py-3 px-4 text-sm font-semibold text-gray-700">Όνομα</th>
                   <th class="text-left py-3 px-4 text-sm font-semibold text-gray-700">Τιμή</th>
                   <th class="text-left py-3 px-4 text-sm font-semibold text-gray-700">Διάρκεια</th>
@@ -450,7 +447,6 @@ const AdminPanel = {
               </thead>
               <tbody>
                 <tr v-for="service in services" :key="service.id" class="border-b hover:bg-gray-50">
-                  <td class="py-3 px-4 text-sm">{{ service.id }}</td>
                   <td class="py-3 px-4 text-sm">{{ service.name }}</td>
                   <td class="py-3 px-4 text-sm">\${{ service.price }}</td>
                   <td class="py-3 px-4 text-sm">{{ service.duration }} λεπτά</td>
@@ -527,7 +523,7 @@ const AdminPanel = {
                     class="text-xs p-1 rounded bg-blue-100 text-blue-800 truncate cursor-pointer hover:bg-blue-200"
                     :title="apt.service?.name + ' - ' + apt.user?.name"
                   >
-                    {{ formatTime(apt.scheduled_at) }} - {{ apt.service?.name }}
+                    {{ formatTime(apt.scheduled_at) }} - {{apt.user?.name}}
                   </div>
                 </div>
               </div>
@@ -547,7 +543,7 @@ const AdminPanel = {
               @change="loadWorkingHours"
               class="w-full border border-gray-300 rounded-md px-4 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
             >
-              <option value="">-- Επιλέξτε Τεχνικό --</option>
+              <option value=""> Επιλέξτε Τεχνικό </option>
               <option v-for="tech in technicians" :key="tech.id" :value="tech.id">
                 {{ tech.name }}
               </option>

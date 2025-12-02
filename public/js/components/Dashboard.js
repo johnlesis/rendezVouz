@@ -4,7 +4,7 @@ const Dashboard = {
       <div class="container mx-auto max-w-6xl">
 
         <div class="flex justify-between items-center mb-4 sm:mb-6">
-          <h2 class="text-xl sm:text-2xl md:text-3xl font-bold">Πίνακας Ελέγχου</h2>
+          <h2 class="text-xl sm:text-2xl md:text-3xl font-bold">Rendez-Vous</h2>
           <button @click="logout" class="bg-red-500 text-white px-3 py-1.5 text-sm sm:px-4 sm:py-2 sm:text-base rounded-md hover:bg-red-600 transition-colors">
             Αποσύνδεση
           </button>
@@ -18,9 +18,9 @@ const Dashboard = {
           <div class="mb-3 sm:mb-4">
             <label class="block text-gray-700 mb-2 text-sm sm:text-base font-medium">1. Επιλέξτε Υπηρεσία</label>
             <select v-model="appointment.service_id" @change="resetSelection" class="w-full px-3 py-2 text-sm sm:px-4 sm:text-base border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-400">
-              <option disabled value="">-- Επιλέξτε μια υπηρεσία --</option>
+              <option disabled value=""> Επιλέξτε μια υπηρεσία </option>
               <option v-for="service in services" :key="service.id" :value="service.id">
-                {{ service.name }} - {{ service.price }} - {{ service.duration }} λεπτά
+                {{ service.name }}
               </option>
             </select>
           </div>
@@ -29,7 +29,7 @@ const Dashboard = {
           <div class="mb-3 sm:mb-4" v-if="appointment.service_id">
             <label class="block text-gray-700 mb-2 text-sm sm:text-base font-medium">2. Επιλέξτε Τεχνικό</label>
             <select v-model="appointment.technician_id" @change="resetDayAndTime" class="w-full px-3 py-2 text-sm sm:px-4 sm:text-base border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-400">
-              <option disabled value="">-- Επιλέξτε έναν τεχνικό --</option>
+              <option disabled value=""> Επιλέξτε έναν τεχνικό </option>
               <option v-for="technician in technicians" :key="technician.id" :value="technician.id">
                 {{ technician.name }}
               </option>
@@ -124,6 +124,7 @@ const Dashboard = {
                 <div class="flex-1 min-w-0">
                   <p class="font-semibold text-base sm:text-lg truncate">{{ apt.service }}</p>
                   <p class="text-gray-600 text-xs sm:text-sm mt-1">{{ apt.start_time }}</p>
+                  <p class="text-gray-600 text-xs sm:text-sm mt-1">{{ apt.date }}</p>
                   <p class="text-xs sm:text-sm text-gray-500 mt-1">Κατάσταση: <span class="font-medium">{{ apt.status }}</span></p>
                 </div>
                 <span class="px-2 sm:px-3 py-1 rounded-full text-xs font-semibold self-start whitespace-nowrap" :class="getStatusClass(apt.status)">
