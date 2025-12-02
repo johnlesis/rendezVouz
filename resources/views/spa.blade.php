@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <title>Vue SPA</title>
+  <title>Nefeloma</title>
   <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
   <script src="https://unpkg.com/vue-router@4/dist/vue-router.global.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
@@ -14,10 +14,10 @@
 </div>
 
 <!-- Include Components -->
-<script src="https://rendezvouz.onrender.com/js/components/Login.js"></script>
-<script src="https://rendezvouz.onrender.com/js/components/Register.js"></script>
-<script src="https://rendezvouz.onrender.com/js/components/Dashboard.js"></script>
-<script src="https://rendezvouz.onrender.com/js/components/AdminPanel.js"></script>
+<script src="/js/components/Login.js"></script>
+<script src="/js/components/Register.js"></script>
+<script src="/js/components/Dashboard.js"></script>
+<script src="/js/components/AdminPanel.js"></script>
 
 <script>
   // Axios default token
