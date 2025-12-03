@@ -1,716 +1,818 @@
 const AdminPanel = {
   template: `
-  <div class="min-h-screen bg-gray-100 p-4 md:p-6 text-base">
-    <div class="min-h-screen bg-gray-100 p-4 md:p-6">
-      <div class="container mx-auto max-w-7xl">
+  <div class="min-h-screen bg-gray-100 p-2 sm:p-4 md:p-6">
+    <div class="container mx-auto max-w-7xl">
 
-        <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-6 gap-3">
-          <div>
-            <h2 class="text-xl sm:text-2xl md:text-3xl font-bold">Πίνακας Διαχείρισης</h2>
-            <p class="text-gray-600 text-sm mt-1">Καλώς ήρθατε, {{ userName }}</p>
-          </div>
+      <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-4 sm:mb-6 gap-3">
+        <div>
+          <h2 class="text-xl sm:text-2xl md:text-3xl font-bold">Πίνακας Διαχείρισης</h2>
+          <p class="text-gray-600 text-sm mt-1">Καλώς ήρθατε, {{ userName }}</p>
+        </div>
+        <button
+          @click="logout"
+          class="self-start sm:self-auto bg-red-500 text-white px-4 py-3 sm:px-3 sm:py-2 text-base sm:text-sm rounded-lg hover:bg-red-600 active:bg-red-700 transition-colors min-h-[44px] sm:min-h-0"
+        >
+          Αποσύνδεση
+        </button>
+      </div>
+
+      <!-- Tabs -->
+      <div class="bg-white rounded-lg shadow-md mb-4 sm:mb-6 overflow-hidden">
+        <div class="flex border-b">
           <button
-            @click="logout"
-            class="bg-red-500 text-white px-4 py-2 text-sm sm:text-base rounded-md hover:bg-red-600 transition-colors whitespace-nowrap"
+            v-for="tab in tabs"
+            :key="tab.id"
+            @click="activeTab = tab.id"
+            :class="[
+              'flex-1 px-1 sm:px-4 py-3 text-[10px] sm:text-sm font-medium whitespace-nowrap transition-colors min-h-[44px] flex items-center justify-center',
+              activeTab === tab.id
+                ? 'border-b-2 border-blue-500 text-blue-600'
+                : 'text-gray-600 hover:text-gray-900 active:bg-gray-50'
+            ]"
           >
-            Αποσύνδεση
+            <span class="md:hidden">{{ tab.mobileName }}</span>
+            <span class="hidden md:inline">{{ tab.name }}</span>
           </button>
         </div>
+      </div>
 
-        <!-- Tabs -->
-        <div class="bg-white rounded-lg shadow-md mb-4 sm:mb-6">
-          <div class="flex border-b overflow-x-auto scrollbar-hide">
-            <button
-              v-for="tab in tabs"
-              :key="tab.id"
-              @click="activeTab = tab.id"
-              :class="[
-                'px-3 sm:px-4 md:px-6 py-3 sm:py-4 text-xs sm:text-sm md:text-base font-medium whitespace-nowrap transition-colors flex-shrink-0',
-                activeTab === tab.id
-                  ? 'border-b-2 border-blue-500 text-blue-600'
-                  : 'text-gray-600 hover:text-gray-900'
-              ]"
+      <!-- Dashboard Tab -->
+      <div v-show="activeTab === 'dashboard'">
+        <!-- Stats Cards -->
+        <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3 sm:gap-4 md:gap-6 mb-4 sm:mb-6">
+          <div class="bg-white p-4 sm:p-5 md:p-6 rounded-lg shadow-md">
+            <div class="flex items-center justify-between">
+              <div>
+                <p class="text-gray-500 text-xs sm:text-sm">Συνολικά Ραντεβού</p>
+                <p class="text-2xl sm:text-3xl font-bold mt-1 sm:mt-2">{{ stats.totalAppointments }}</p>
+              </div>
+              <div class="bg-blue-100 p-2 sm:p-3 rounded-full">
+                <svg class="w-6 h-6 sm:w-8 sm:h-8 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
+                </svg>
+              </div>
+            </div>
+          </div>
+
+          <div class="bg-white p-4 sm:p-5 md:p-6 rounded-lg shadow-md">
+            <div class="flex items-center justify-between">
+              <div>
+                <p class="text-gray-500 text-xs sm:text-sm">Συνολικοί Τεχνικοί</p>
+                <p class="text-2xl sm:text-3xl font-bold mt-1 sm:mt-2">{{ stats.totalTechnicians }}</p>
+              </div>
+              <div class="bg-green-100 p-2 sm:p-3 rounded-full">
+                <svg class="w-6 h-6 sm:w-8 sm:h-8 text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z"></path>
+                </svg>
+              </div>
+            </div>
+          </div>
+
+          <div class="bg-white p-4 sm:p-5 md:p-6 rounded-lg shadow-md">
+            <div class="flex items-center justify-between">
+              <div>
+                <p class="text-gray-500 text-xs sm:text-sm">Ενεργές Υπηρεσίες</p>
+                <p class="text-2xl sm:text-3xl font-bold mt-1 sm:mt-2">{{ stats.totalServices }}</p>
+              </div>
+              <div class="bg-purple-100 p-2 sm:p-3 rounded-full">
+                <svg class="w-6 h-6 sm:w-8 sm:h-8 text-purple-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 13.255A23.931 23.931 0 0112 15c-3.183 0-6.22-.62-9-1.745M16 6V4a2 2 0 00-2-2h-4a2 2 0 00-2 2v2m4 6h.01M5 20h14a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"></path>
+                </svg>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Recent Appointments -->
+        <div class="bg-white p-4 sm:p-5 md:p-6 rounded-lg shadow-md">
+          <h3 class="text-lg sm:text-xl font-bold mb-3 sm:mb-4">Πρόσφατα Ραντεβού</h3>
+
+          <div v-if="loadingAppointments" class="text-center py-6 sm:py-8">
+            <p class="text-gray-500 text-sm sm:text-base">Φόρτωση ραντεβού...</p>
+          </div>
+
+          <div v-else-if="appointments.length === 0" class="text-center py-6 sm:py-8">
+            <p class="text-gray-500 text-sm sm:text-base">Δεν βρέθηκαν ραντεβού.</p>
+          </div>
+
+          <!-- Appointment cards -->
+          <div v-else class="space-y-3">
+            <div
+              v-for="appointment in appointments.slice(0, 10)"
+              :key="appointment.id"
+              class="p-3 sm:p-4 border rounded-lg hover:shadow-md transition-all"
             >
-              {{ tab.name }}
-            </button>
-          </div>
-        </div>
-
-        <!-- Dashboard Tab -->
-        <div v-show="activeTab === 'dashboard'">
-          <!-- Stats Cards -->
-          <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
-            <div class="bg-white p-6 rounded-lg shadow-md">
-              <div class="flex items-center justify-between">
-                <div>
-                  <p class="text-gray-500 text-sm">Συνολικά Ραντεβού</p>
-                  <p class="text-3xl font-bold mt-2">{{ stats.totalAppointments }}</p>
-                </div>
-                <div class="bg-blue-100 p-3 rounded-full">
-                  <svg class="w-8 h-8 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
-                  </svg>
-                </div>
-              </div>
-            </div>
-
-            <div class="bg-white p-6 rounded-lg shadow-md">
-              <div class="flex items-center justify-between">
-                <div>
-                  <p class="text-gray-500 text-sm">Συνολικοί Τεχνικοί</p>
-                  <p class="text-3xl font-bold mt-2">{{ stats.totalTechnicians }}</p>
-                </div>
-                <div class="bg-green-100 p-3 rounded-full">
-                  <svg class="w-8 h-8 text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z"></path>
-                  </svg>
-                </div>
-              </div>
-            </div>
-
-            <div class="bg-white p-6 rounded-lg shadow-md">
-              <div class="flex items-center justify-between">
-                <div>
-                  <p class="text-gray-500 text-sm">Ενεργές Υπηρεσίες</p>
-                  <p class="text-3xl font-bold mt-2">{{ stats.totalServices }}</p>
-                </div>
-                <div class="bg-purple-100 p-3 rounded-full">
-                  <svg class="w-8 h-8 text-purple-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 13.255A23.931 23.931 0 0112 15c-3.183 0-6.22-.62-9-1.745M16 6V4a2 2 0 00-2-2h-4a2 2 0 00-2 2v2m4 6h.01M5 20h14a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"></path>
-                  </svg>
-                </div>
-              </div>
-            </div>
-          </div>
-
-          <!-- Recent Appointments -->
-          <div class="bg-white p-4 sm:p-6 rounded-lg shadow-md">
-            <h3 class="text-lg sm:text-xl font-bold mb-4">Πρόσφατα Ραντεβού</h3>
-
-            <div v-if="loadingAppointments" class="text-center py-6 sm:py-8">
-              <p class="text-gray-500 text-sm sm:text-base">Φόρτωση ραντεβού...</p>
-            </div>
-
-            <div v-else-if="appointments.length === 0" class="text-center py-6 sm:py-8">
-              <p class="text-gray-500 text-sm sm:text-base">Δεν βρέθηκαν ραντεβού.</p>
-            </div>
-
-            <div v-else class="overflow-x-auto -mx-4 sm:mx-0">
-              <table class="w-full min-w-full">
-                <thead class="hidden sm:table-header-group">
-                  <tr class="border-b">
-                    <th class="text-left py-2 sm:py-3 px-2 sm:px-4 text-xs sm:text-sm font-semibold text-gray-700">Πελάτης</th>
-                    <th class="text-left py-2 sm:py-3 px-2 sm:px-4 text-xs sm:text-sm font-semibold text-gray-700">Υπηρεσία</th>
-                    <th class="text-left py-2 sm:py-3 px-2 sm:px-4 text-xs sm:text-sm font-semibold text-gray-700">Ημερομηνία & Ώρα</th>
-                    <th class="text-left py-2 sm:py-3 px-2 sm:px-4 text-xs sm:text-sm font-semibold text-gray-700">Κατάσταση</th>
-                    <th class="text-left py-2 sm:py-3 px-2 sm:px-4 text-xs sm:text-sm font-semibold text-gray-700">Ενέργειες</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  <tr v-for="appointment in appointments.slice(0, 10)" :key="appointment.id" class="border-b hover:bg-gray-50 flex flex-col sm:table-row py-3 sm:py-0">
-                    <td class="py-1 sm:py-3 px-4 text-xs sm:text-sm">
-                      <span class="sm:hidden font-semibold text-gray-600">Πελάτης: </span>
-                      {{ appointment.user?.name || 'N/A' }}
-                    </td>
-                    <td class="py-1 sm:py-3 px-4 text-xs sm:text-sm">
-                      <span class="sm:hidden font-semibold text-gray-600">Υπηρεσία: </span>
-                      {{ appointment.service?.name || 'N/A' }}
-                    </td>
-                    <td class="py-1 sm:py-3 px-4 text-xs sm:text-sm">
-                      <span class="sm:hidden font-semibold text-gray-600">Ημερομηνία & Ώρα: </span>
-                      {{ formatDate(appointment.scheduled_at) }}
-                    </td>
-                    <td class="py-1 sm:py-3 px-4">
-                      <span class="sm:hidden font-semibold text-gray-600">Κατάσταση: </span>
-                      <span :class="getStatusClass(appointment.status)" class="px-2 py-1 rounded-full text-xs font-semibold inline-block">
-                        {{ appointment.status }}
-                      </span>
-                    </td>
-                    <td class="py-1 sm:py-3 px-4">
-                      <button
-                        @click="deleteAppointment(appointment.id)"
-                        class="text-red-500 hover:text-red-700 text-xs sm:text-sm font-medium transition-colors"
-                      >
-                        Διαγραφή
-                      </button>
-                    </td>
-                  </tr>
-                </tbody>
-              </table>
-            </div>
-          </div>
-        </div>
-
-        <!-- Book Appointment Tab -->
-        <div v-show="activeTab === 'book'" class="bg-white p-4 sm:p-6 md:p-8 rounded-lg shadow-md">
-          <h3 class="text-lg sm:text-xl md:text-2xl font-bold mb-4 sm:mb-6">Κλείσιμο Ραντεβού για Πελάτη</h3>
-
-          <form @submit.prevent="bookAppointmentForClient" class="space-y-4 sm:space-y-6">
-            <!-- Client Selection -->
-            <div>
-              <label class="block text-sm sm:text-base font-medium text-gray-700 mb-2">1. Επιλέξτε Πελάτη</label>
-              <select v-model="bookingForm.user_id" @change="resetBookingSelection" class="w-full px-3 sm:px-4 py-2 text-sm sm:text-base border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-400" required>
-                <option disabled value=""> Επιλέξτε πελάτη </option>
-                <option v-for="user in users" :key="user.id" :value="user.id">
-                  {{ user.name }} ({{ user.email }})
-                </option>
-              </select>
-            </div>
-
-            <!-- Service Selection -->
-            <div v-if="bookingForm.user_id">
-              <label class="block text-sm sm:text-base font-medium text-gray-700 mb-2">2. Επιλέξτε Υπηρεσία</label>
-              <select v-model="bookingForm.service_id" @change="resetTechnicianAndDateTime" class="w-full px-3 sm:px-4 py-2 text-sm sm:text-base border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-400" required>
-                <option disabled value=""> Επιλέξτε μια υπηρεσία </option>
-                <option v-for="service in services" :key="service.id" :value="service.id">
-                  {{ service.name }} - {{ service.duration }} λεπτά
-                </option>
-              </select>
-            </div>
-
-            <!-- Technician Selection -->
-            <div v-if="bookingForm.service_id">
-              <label class="block text-sm sm:text-base font-medium text-gray-700 mb-2">3. Επιλέξτε Τεχνικό</label>
-              <select v-model="bookingForm.technician_id" @change="resetDateTime" class="w-full px-3 sm:px-4 py-2 text-sm sm:text-base border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-400" required>
-                <option disabled value=""> Επιλέξτε έναν τεχνικό </option>
-                <option v-for="technician in technicians" :key="technician.id" :value="technician.id">
-                  {{ technician.name }}
-                </option>
-              </select>
-            </div>
-
-            <!-- Date Selection with Calendar -->
-            <div v-if="bookingForm.technician_id">
-              <label class="block text-gray-700 mb-2 text-sm sm:text-base font-medium">4. Επιλέξτε Ημερομηνία</label>
-              <div class="border rounded-lg p-2 sm:p-4 bg-gray-50">
-                <div class="flex justify-between items-center mb-3 sm:mb-4">
-                  <button @click="previousBookingMonth" type="button" class="p-1 sm:p-2 hover:bg-gray-200 rounded-full transition-colors text-lg sm:text-xl">&lt;</button>
-                  <h4 class="text-sm sm:text-base md:text-lg font-semibold">{{ bookingMonthYear }}</h4>
-                  <button @click="nextBookingMonth" type="button" class="p-1 sm:p-2 hover:bg-gray-200 rounded-full transition-colors text-lg sm:text-xl">&gt;</button>
+              <div class="flex flex-col sm:flex-row sm:justify-between sm:items-start gap-2">
+                <div class="flex-1 min-w-0 space-y-1">
+                  <p class="font-semibold text-sm sm:text-base truncate">{{ appointment.user?.name || 'N/A' }}</p>
+                  <p v-if="appointment.user?.phone" class="text-gray-600 text-xs sm:text-sm">📞 {{ appointment.user.phone }}</p>
+                  <p class="text-gray-600 text-xs sm:text-sm">{{ appointment.service?.name || 'N/A' }}</p>
+                  <p class="text-gray-500 text-xs sm:text-sm">{{ formatDate(appointment.scheduled_at) }}</p>
                 </div>
 
-                <div class="grid grid-cols-7 gap-1 text-center">
-                  <div v-for="day in ['Δε','Τρ','Τε','Πε','Πα','Σα','Κυ']" :key="day" class="text-xs font-semibold text-gray-600 py-2">{{ day }}</div>
-                  <div v-for="day in bookingCalendarDays" :key="day.date" @click="selectBookingDate(day)" type="button"
-                    :class="[
-                      'py-2 rounded cursor-pointer transition-colors',
-                      day.isCurrentMonth ? 'text-gray-900' : 'text-gray-300',
-                      day.isToday ? 'bg-blue-100 font-bold' : '',
-                      day.isSelected ? 'bg-blue-500 text-white' : 'hover:bg-gray-200',
-                      !day.isCurrentMonth ? 'cursor-not-allowed' : ''
-                    ]">
-                    {{ day.day }}
-                  </div>
-                </div>
-              </div>
-              <div v-if="bookingForm.date" class="mt-2 text-sm text-gray-600">
-                Επιλέχθηκε: <span class="font-semibold">{{ formatBookingSelectedDate }}</span>
-              </div>
-            </div>
-
-            <!-- Time Slot Selection -->
-            <div v-if="bookingForm.date">
-              <label class="block text-gray-700 mb-2 text-sm sm:text-base font-medium">5. Επιλέξτε Ώρα</label>
-              <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-2">
-                <button
-                  v-for="slot in generateBookingSlotGrid()"
-                  :key="slot.time"
-                  @click="selectBookingSlot(slot)"
-                  type="button"
-                  :disabled="slot.isBooked"
-                  :class="[
-                    'px-2 sm:px-3 py-2 border rounded-md text-xs sm:text-sm transition-colors',
-                    bookingForm.time === slot.time ? 'bg-green-500 text-white border-green-500' : 'bg-white hover:bg-green-50 hover:border-green-400',
-                    slot.isBooked ? 'bg-gray-200 text-gray-400 cursor-not-allowed hover:bg-gray-200' : ''
-                  ]">
-                  {{ slot.time }}
-                </button>
-              </div>
-            </div>
-
-            <!-- Booking Summary -->
-            <div v-if="canBookForClient" class="p-3 sm:p-4 bg-blue-50 border border-blue-200 rounded-md">
-              <h4 class="font-semibold text-blue-900 mb-2 text-sm sm:text-base">Σύνοψη Κράτησης</h4>
-              <div class="text-xs sm:text-sm text-blue-800 space-y-1">
-                <p><span class="font-medium">Πελάτης:</span> {{ getSelectedUserName() }}</p>
-                <p><span class="font-medium">Υπηρεσία:</span> {{ getSelectedServiceName() }}</p>
-                <p><span class="font-medium">Τεχνικός:</span> {{ getSelectedTechnicianName() }}</p>
-                <p><span class="font-medium">Ημερομηνία:</span> {{ formatBookingSelectedDate }}</p>
-                <p><span class="font-medium">Ώρα:</span> {{ bookingForm.time }}</p>
-              </div>
-            </div>
-
-            <!-- Submit Button -->
-            <button
-              type="submit"
-              :disabled="!canBookForClient"
-              :class="['w-full px-4 py-3 text-sm sm:text-base rounded-md transition-colors font-medium', canBookForClient ? 'bg-green-500 text-white hover:bg-green-600' : 'bg-gray-300 text-gray-500 cursor-not-allowed']"
-            >
-              Κλείσιμο Ραντεβού
-            </button>
-
-            <p v-if="bookingError" class="text-red-500 text-xs sm:text-sm">{{ bookingError }}</p>
-            <p v-if="bookingSuccess" class="text-green-500 text-xs sm:text-sm">{{ bookingSuccess }}</p>
-          </form>
-        </div>
-
-        <!-- Technicians Tab -->
-        <div v-show="activeTab === 'technicians'" class="bg-white p-6 rounded-lg shadow-md">
-          <div class="flex justify-between items-center mb-6">
-            <h3 class="text-xl font-bold">Διαχείριση Τεχνικών</h3>
-            <button
-              @click="showAddTechnicianForm = true"
-              class="bg-blue-500 text-white px-4 py-2 rounded-md hover:bg-blue-600 transition-colors"
-            >
-              + Προσθήκη Τεχνικού
-            </button>
-          </div>
-
-          <!-- Add Technician Form -->
-          <div v-if="showAddTechnicianForm" class="mb-6 p-4 border rounded-lg bg-gray-50">
-            <h4 class="font-semibold mb-4">Προσθήκη Νέου Τεχνικού</h4>
-            <form @submit.prevent="addTechnician" class="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div>
-                <label class="block text-sm font-medium text-gray-700 mb-1">Όνομα</label>
-                <input v-model="newTechnician.name" type="text" required class="w-full px-3 py-2 border rounded-md" />
-              </div>
-              <div>
-                <label class="block text-sm font-medium text-gray-700 mb-1">Ειδίκευση</label>
-                <input v-model="newTechnician.specialization" type="text" class="w-full px-3 py-2 border rounded-md" />
-              </div>
-              <div class="md:col-span-2">
-                <label class="block text-sm font-medium text-gray-700 mb-1">Βιογραφικό</label>
-                <textarea v-model="newTechnician.bio" rows="3" class="w-full px-3 py-2 border rounded-md"></textarea>
-              </div>
-              <div class="md:col-span-2 flex gap-2">
-                <button type="submit" class="bg-green-500 text-white px-4 py-2 rounded-md hover:bg-green-600">
-                  Αποθήκευση Τεχνικού
-                </button>
-                <button type="button" @click="cancelAddTechnician" class="bg-gray-300 text-gray-700 px-4 py-2 rounded-md hover:bg-gray-400">
-                  Ακύρωση
-                </button>
-              </div>
-            </form>
-            <p v-if="technicianError" class="mt-2 text-red-500 text-sm">{{ technicianError }}</p>
-            <p v-if="technicianSuccess" class="mt-2 text-green-500 text-sm">{{ technicianSuccess }}</p>
-          </div>
-
-          <!-- Technicians List -->
-          <div v-if="loadingTechnicians" class="text-center py-8">
-            <p class="text-gray-500">Φόρτωση τεχνικών...</p>
-          </div>
-
-          <div v-else-if="technicians.length === 0" class="text-center py-8">
-            <p class="text-gray-500">Δεν βρέθηκαν τεχνικοί.</p>
-          </div>
-
-          <div v-else class="overflow-x-auto">
-            <table class="w-full">
-              <thead>
-                <tr class="border-b">
-                  <th class="text-left py-3 px-4 text-sm font-semibold text-gray-700">Όνομα</th>
-                  <th class="text-left py-3 px-4 text-sm font-semibold text-gray-700">Ειδίκευση</th>
-                  <th class="text-left py-3 px-4 text-sm font-semibold text-gray-700">Κατάσταση</th>
-                  <th class="text-left py-3 px-4 text-sm font-semibold text-gray-700">Ενέργειες</th>
-                </tr>
-              </thead>
-              <tbody>
-                <tr v-for="tech in technicians" :key="tech.id" class="border-b hover:bg-gray-50">
-                  <td class="py-3 px-4 text-sm">{{ tech.name }}</td>
-                  <td class="py-3 px-4 text-sm">{{ tech.specialization || 'N/A' }}</td>
-                  <td class="py-3 px-4">
-                    <span :class="tech.is_available ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'" class="px-2 py-1 rounded-full text-xs font-semibold">
-                      {{ tech.is_available ? 'Διαθέσιμος' : 'Μη διαθέσιμος' }}
-                    </span>
-                  </td>
-                  <td class="py-3 px-4">
-                    <button @click="deleteTechnician(tech.id)" class="text-red-500 hover:text-red-700 text-sm font-medium">
-                      Διαγραφή
-                    </button>
-                  </td>
-                </tr>
-              </tbody>
-            </table>
-          </div>
-        </div>
-
-        <!-- Services Tab -->
-        <div v-show="activeTab === 'services'" class="bg-white p-6 rounded-lg shadow-md">
-          <div class="flex justify-between items-center mb-6">
-            <h3 class="text-xl font-bold">Διαχείριση Υπηρεσιών</h3>
-            <button
-              @click="showAddServiceForm = true"
-              class="bg-blue-500 text-white px-4 py-2 rounded-md hover:bg-blue-600 transition-colors"
-            >
-              + Προσθήκη Υπηρεσίας
-            </button>
-          </div>
-
-          <!-- Add Service Form -->
-          <div v-if="showAddServiceForm" class="mb-6 p-4 border rounded-lg bg-gray-50">
-            <h4 class="font-semibold mb-4">Προσθήκη Νέας Υπηρεσίας</h4>
-            <form @submit.prevent="addService" class="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div>
-                <label class="block text-sm font-medium text-gray-700 mb-1">Όνομα</label>
-                <input v-model="newService.name" type="text" required class="w-full px-3 py-2 border rounded-md" />
-              </div>
-              <div>
-                <label class="block text-sm font-medium text-gray-700 mb-1">Τιμή ($)</label>
-                <input v-model="newService.price" type="number" step="0.01" required class="w-full px-3 py-2 border rounded-md" />
-              </div>
-              <div>
-                <label class="block text-sm font-medium text-gray-700 mb-1">Διάρκεια (λεπτά)</label>
-                <input v-model="newService.duration" type="number" required class="w-full px-3 py-2 border rounded-md" />
-              </div>
-              <div>
-                <label class="block text-sm font-medium text-gray-700 mb-1">Κατάσταση</label>
-                <select v-model="newService.is_active" class="w-full px-3 py-2 border rounded-md">
-                  <option :value="true">Ενεργή</option>
-                  <option :value="false">Ανενεργή</option>
-                </select>
-              </div>
-              <div class="md:col-span-2">
-                <label class="block text-sm font-medium text-gray-700 mb-1">Περιγραφή</label>
-                <textarea v-model="newService.description" rows="3" class="w-full px-3 py-2 border rounded-md"></textarea>
-              </div>
-              <div class="md:col-span-2 flex gap-2">
-                <button type="submit" class="bg-green-500 text-white px-4 py-2 rounded-md hover:bg-green-600">
-                  Αποθήκευση Υπηρεσίας
-                </button>
-                <button type="button" @click="cancelAddService" class="bg-gray-300 text-gray-700 px-4 py-2 rounded-md hover:bg-gray-400">
-                  Ακύρωση
-                </button>
-              </div>
-            </form>
-            <p v-if="serviceError" class="mt-2 text-red-500 text-sm">{{ serviceError }}</p>
-            <p v-if="serviceSuccess" class="mt-2 text-green-500 text-sm">{{ serviceSuccess }}</p>
-          </div>
-
-          <!-- Edit Service Form -->
-          <div v-if="editingService" class="mb-6 p-4 border rounded-lg bg-blue-50">
-            <h4 class="font-semibold mb-4">Επεξεργασία Υπηρεσίας</h4>
-            <form @submit.prevent="updateService" class="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div>
-                <label class="block text-sm font-medium text-gray-700 mb-1">Όνομα</label>
-                <input v-model="editService.name" type="text" required class="w-full px-3 py-2 border rounded-md" />
-              </div>
-              <div>
-                <label class="block text-sm font-medium text-gray-700 mb-1">Τιμή ($)</label>
-                <input v-model="editService.price" type="number" step="0.01" required class="w-full px-3 py-2 border rounded-md" />
-              </div>
-              <div>
-                <label class="block text-sm font-medium text-gray-700 mb-1">Διάρκεια (λεπτά)</label>
-                <input v-model="editService.duration" type="number" required class="w-full px-3 py-2 border rounded-md" />
-              </div>
-              <div>
-                <label class="block text-sm font-medium text-gray-700 mb-1">Κατάσταση</label>
-                <select v-model="editService.is_active" class="w-full px-3 py-2 border rounded-md">
-                  <option :value="true">Ενεργή</option>
-                  <option :value="false">Ανενεργή</option>
-                </select>
-              </div>
-              <div class="md:col-span-2">
-                <label class="block text-sm font-medium text-gray-700 mb-1">Περιγραφή</label>
-                <textarea v-model="editService.description" rows="3" class="w-full px-3 py-2 border rounded-md"></textarea>
-              </div>
-              <div class="md:col-span-2 flex gap-2">
-                <button type="submit" class="bg-blue-500 text-white px-4 py-2 rounded-md hover:bg-blue-600">
-                  Ενημέρωση Υπηρεσίας
-                </button>
-                <button type="button" @click="cancelEditService" class="bg-gray-300 text-gray-700 px-4 py-2 rounded-md hover:bg-gray-400">
-                  Ακύρωση
-                </button>
-              </div>
-            </form>
-            <p v-if="serviceError" class="mt-2 text-red-500 text-sm">{{ serviceError }}</p>
-            <p v-if="serviceSuccess" class="mt-2 text-green-500 text-sm">{{ serviceSuccess }}</p>
-          </div>
-
-          <!-- Services List -->
-          <div v-if="loadingServices" class="text-center py-8">
-            <p class="text-gray-500">Φόρτωση υπηρεσιών...</p>
-          </div>
-
-          <div v-else-if="services.length === 0" class="text-center py-8">
-            <p class="text-gray-500">Δεν βρέθηκαν υπηρεσίες.</p>
-          </div>
-
-          <div v-else class="overflow-x-auto">
-            <table class="w-full">
-              <thead>
-                <tr class="border-b">
-                  <th class="text-left py-3 px-4 text-sm font-semibold text-gray-700">Όνομα</th>
-                  <th class="text-left py-3 px-4 text-sm font-semibold text-gray-700">Τιμή</th>
-                  <th class="text-left py-3 px-4 text-sm font-semibold text-gray-700">Διάρκεια</th>
-                  <th class="text-left py-3 px-4 text-sm font-semibold text-gray-700">Κατάσταση</th>
-                  <th class="text-left py-3 px-4 text-sm font-semibold text-gray-700">Ενέργειες</th>
-                </tr>
-              </thead>
-              <tbody>
-                <tr v-for="service in services" :key="service.id" class="border-b hover:bg-gray-50">
-                  <td class="py-3 px-4 text-sm">{{ service.name }}</td>
-                  <td class="py-3 px-4 text-sm">\${{ service.price }}</td>
-                  <td class="py-3 px-4 text-sm">{{ service.duration }} λεπτά</td>
-                  <td class="py-3 px-4">
-                    <span :class="service.is_active ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'" class="px-2 py-1 rounded-full text-xs font-semibold">
-                      {{ service.is_active ? 'Ενεργή' : 'Ανενεργή' }}
-                    </span>
-                  </td>
-                  <td class="py-3 px-4">
-                    <button @click="startEditService(service)" class="text-blue-500 hover:text-blue-700 text-sm font-medium mr-3">
-                      Επεξεργασία
-                    </button>
-                    <button @click="deleteService(service.id)" class="text-red-500 hover:text-red-700 text-sm font-medium">
-                      Διαγραφή
-                    </button>
-                  </td>
-                </tr>
-              </tbody>
-            </table>
-          </div>
-        </div>
-
-        <!-- Calendar Tab -->
-        <div v-show="activeTab === 'calendar'" class="bg-white p-6 rounded-lg shadow-md">
-          <h3 class="text-xl font-bold mb-6">Ημερολόγιο Ραντεβού</h3>
-
-          <!-- Calendar Header -->
-          <div class="flex justify-between items-center mb-4">
-            <button @click="previousMonth" class="p-2 hover:bg-gray-100 rounded">
-              <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"></path>
-              </svg>
-            </button>
-            <h4 class="text-lg font-semibold">{{ currentMonthYear }}</h4>
-            <button @click="nextMonth" class="p-2 hover:bg-gray-100 rounded">
-              <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
-              </svg>
-            </button>
-          </div>
-
-          <!-- Calendar Grid -->
-          <div class="border rounded-lg overflow-hidden">
-            <!-- Day Headers -->
-            <div class="grid grid-cols-7 bg-gray-100">
-              <div v-for="day in ['Δευ', 'Τρί', 'Τετ', 'Πέμ', 'Παρ', 'Σάβ', 'Κυρ']" :key="day" class="text-center py-2 text-sm font-semibold text-gray-700 border-r last:border-r-0">
-                {{ day }}
-              </div>
-            </div>
-
-            <!-- Calendar Days -->
-            <div class="grid grid-cols-7">
-              <div
-                v-for="day in calendarDays"
-                :key="day.date"
-                :class="[
-                  'min-h-24 p-2 border-r border-b last:border-r-0 relative',
-                  day.isCurrentMonth ? 'bg-white' : 'bg-gray-50',
-                  day.isToday ? 'bg-blue-50' : '',
-                  isDateBlocked(day.date) ? 'bg-red-50' : ''
-                ]"
-              >
-                <div :class="[
-                  'text-sm font-medium mb-1 flex items-center justify-between',
-                  day.isCurrentMonth ? 'text-gray-900' : 'text-gray-400'
-                ]">
-                  <span>{{ day.day }}</span>
-                  <span v-if="isDateBlocked(day.date)" class="text-red-600 text-lg" title="Μη διαθέσιμη ημέρα">⊗</span>
-                </div>
-                <div class="space-y-1">
-                  <div
-                    v-for="apt in getAppointmentsForDate(day.date)"
-                    :key="apt.id"
-                    class="text-xs p-1 rounded bg-blue-100 text-blue-800 truncate cursor-pointer hover:bg-blue-200"
-                    :title="apt.service?.name + ' - ' + apt.user?.name"
+                <div class="flex flex-row sm:flex-col items-center sm:items-end gap-2">
+                  <span
+                    :class="getStatusClass(appointment.status)"
+                    class="px-2 py-1 rounded-full text-xs font-semibold whitespace-nowrap"
                   >
-                    {{ formatTime(apt.scheduled_at) }} - {{apt.user?.name}}
-                  </div>
+                    {{ appointment.status }}
+                  </span>
+                  <button
+                    @click="deleteAppointment(appointment.id)"
+                    class="text-red-500 hover:text-red-700 active:text-red-800 text-xs sm:text-sm font-medium transition-colors min-h-[44px] sm:min-h-0 px-2"
+                  >
+                    Διαγραφή
+                  </button>
                 </div>
               </div>
             </div>
           </div>
         </div>
+      </div>
 
-        <!-- Working Hours Tab -->
-        <div v-show="activeTab === 'working-hours'" class="bg-white p-6 rounded-lg shadow-md">
-          <h3 class="text-xl font-bold mb-6">Διαχείριση Ωραρίου Εργασίας Τεχνικών</h3>
+      <!-- Book Appointment Tab -->
+      <div v-show="activeTab === 'book'" class="bg-white p-4 sm:p-5 md:p-6 rounded-lg shadow-md">
+        <h3 class="text-lg sm:text-xl md:text-2xl font-bold mb-4 sm:mb-5">Κλείσιμο Ραντεβού για Πελάτη</h3>
 
-          <!-- Technician Selection -->
-          <div class="mb-6">
-            <label class="block text-gray-700 font-medium mb-2">Επιλογή Τεχνικού</label>
-            <select
-              v-model="selectedTechnicianForHours"
-              @change="loadWorkingHours"
-              class="w-full border border-gray-300 rounded-md px-4 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
-            >
-              <option value=""> Επιλέξτε Τεχνικό </option>
-              <option v-for="tech in technicians" :key="tech.id" :value="tech.id">
-                {{ tech.name }}
+        <form @submit.prevent="bookAppointmentForClient" class="space-y-4 sm:space-y-5">
+          <!-- Client Selection -->
+          <div>
+            <label class="block text-sm sm:text-base font-medium text-gray-700 mb-2">1. Επιλέξτε Πελάτη</label>
+            <select v-model="bookingForm.user_id" @change="resetBookingSelection" class="w-full px-3 py-3 sm:px-4 sm:py-2 text-base sm:text-base border rounded-lg sm:rounded-md focus:outline-none focus:ring-2 focus:ring-blue-400 min-h-[44px]" required>
+              <option disabled value=""> Επιλέξτε πελάτη </option>
+              <option v-for="user in users" :key="user.id" :value="user.id">
+                {{ user.name }}
               </option>
             </select>
           </div>
 
-          <!-- Working Hours Form -->
-          <div v-if="selectedTechnicianForHours" class="space-y-4">
-            <div class="bg-blue-50 border-l-4 border-blue-500 p-4 mb-4">
-              <p class="text-sm text-blue-800">
-                Ορίστε το ωράριο εργασίας για κάθε ημέρα της εβδομάδας. Απενεργοποιήστε τις ημέρες που δεν εργάζεται ο τεχνικός.
-              </p>
-            </div>
+          <!-- Service Selection -->
+          <div v-if="bookingForm.user_id">
+            <label class="block text-sm sm:text-base font-medium text-gray-700 mb-2">2. Επιλέξτε Υπηρεσία</label>
+            <select v-model="bookingForm.service_id" @change="resetTechnicianAndDateTime" class="w-full px-3 py-3 sm:px-4 sm:py-2 text-base sm:text-base border rounded-lg sm:rounded-md focus:outline-none focus:ring-2 focus:ring-blue-400 min-h-[44px]" required>
+              <option disabled value=""> Επιλέξτε μια υπηρεσία </option>
+              <option v-for="service in services" :key="service.id" :value="service.id">
+                {{ service.name }} - {{ service.duration }} λεπτά
+              </option>
+            </select>
+          </div>
 
-            <div v-for="(day, index) in weekDays" :key="index" class="border rounded-lg p-4">
-              <div class="flex flex-col sm:flex-row sm:items-center gap-4">
-                <!-- Day Name -->
-                <div class="w-full sm:w-32">
-                  <label class="font-medium text-gray-700">{{ day.name }}</label>
-                </div>
+          <!-- Technician Selection -->
+          <div v-if="bookingForm.service_id">
+            <label class="block text-sm sm:text-base font-medium text-gray-700 mb-2">3. Επιλέξτε Τεχνικό</label>
+            <select v-model="bookingForm.technician_id" @change="resetDateTime" class="w-full px-3 py-3 sm:px-4 sm:py-2 text-base sm:text-base border rounded-lg sm:rounded-md focus:outline-none focus:ring-2 focus:ring-blue-400 min-h-[44px]" required>
+              <option disabled value=""> Επιλέξτε έναν τεχνικό </option>
+              <option v-for="technician in technicians" :key="technician.id" :value="technician.id">
+                {{ technician.name }}
+              </option>
+            </select>
+          </div>
 
-                <!-- Active Toggle -->
-                <div class="flex items-center">
-                  <input
-                    type="checkbox"
-                    v-model="workingHoursForm[index].is_active"
-                    class="w-4 h-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500"
-                  />
-                  <label class="ml-2 text-sm text-gray-600">Ενεργό</label>
-                </div>
+          <!-- Date Selection with Calendar -->
+          <div v-if="bookingForm.technician_id">
+            <label class="block text-gray-700 mb-2 text-sm sm:text-base font-medium">4. Επιλέξτε Ημερομηνία</label>
+            <div class="border rounded-lg p-3 sm:p-4 bg-gray-50">
+              <div class="flex justify-between items-center mb-3 sm:mb-4">
+                <button @click="previousBookingMonth" type="button" class="p-3 sm:p-2 hover:bg-gray-200 rounded-full transition-colors min-w-[44px] min-h-[44px] sm:min-w-0 sm:min-h-0">&lt;</button>
+                <h4 class="text-sm sm:text-base font-semibold">{{ bookingMonthYear }}</h4>
+                <button @click="nextBookingMonth" type="button" class="p-3 sm:p-2 hover:bg-gray-200 rounded-full transition-colors min-w-[44px] min-h-[44px] sm:min-w-0 sm:min-h-0">&gt;</button>
+              </div>
 
-                <!-- Time Inputs -->
-                <div class="flex-1 flex gap-4" v-if="workingHoursForm[index].is_active">
-                  <div class="flex-1">
-                    <label class="block text-xs text-gray-600 mb-1">Ώρα Έναρξης</label>
-                    <input
-                      type="text"
-                      v-model="workingHoursForm[index].start_time"
-                      placeholder="09:00"
-                      pattern="([01]?[0-9]|2[0-3]):[0-5][0-9]"
-                      maxlength="5"
-                      class="w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
-                    />
-                  </div>
-                  <div class="flex-1">
-                    <label class="block text-xs text-gray-600 mb-1">Ώρα Λήξης</label>
-                    <input
-                      type="text"
-                      v-model="workingHoursForm[index].end_time"
-                      placeholder="17:00"
-                      pattern="([01]?[0-9]|2[0-3]):[0-5][0-9]"
-                      maxlength="5"
-                      class="w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
-                    />
-                  </div>
+              <div class="grid grid-cols-7 gap-1 text-center">
+                <div v-for="day in ['Δε','Τρ','Τε','Πε','Πα','Σα','Κυ']" :key="day" class="text-xs sm:text-sm font-semibold text-gray-600 py-2">{{ day }}</div>
+                <div v-for="day in bookingCalendarDays" :key="day.date" @click="selectBookingDate(day)" type="button"
+                  :class="[
+                    'py-3 sm:py-2 rounded text-sm cursor-pointer transition-colors min-h-[44px] sm:min-h-0 flex items-center justify-center',
+                    day.isCurrentMonth ? 'text-gray-900' : 'text-gray-300',
+                    day.isToday ? 'bg-blue-100 font-bold' : '',
+                    day.isSelected ? 'bg-blue-500 text-white' : 'hover:bg-gray-200 active:bg-gray-300',
+                    !day.isCurrentMonth ? 'cursor-not-allowed pointer-events-none' : '',
+                    isDateInvalidForBooking(day.date) ? 'opacity-50 cursor-not-allowed pointer-events-none bg-gray-100' : ''
+                  ]">
+                  {{ day.day }}
                 </div>
               </div>
             </div>
+            <div v-if="bookingForm.date" class="mt-2 text-xs sm:text-sm text-gray-600">
+              Επιλέχθηκε: <span class="font-semibold">{{ formatBookingSelectedDate }}</span>
+            </div>
+          </div>
 
-            <!-- Save Button -->
-            <div class="flex gap-4 pt-4">
+          <!-- Time Slot Selection -->
+          <div v-if="bookingForm.date">
+            <label class="block text-gray-700 mb-2 text-sm sm:text-base font-medium">5. Επιλέξτε Ώρα</label>
+            <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-2">
               <button
-                @click="saveWorkingHours"
-                :disabled="savingWorkingHours"
-                class="bg-blue-500 text-white px-6 py-2 rounded-md hover:bg-blue-600 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-              >
-                {{ savingWorkingHours ? 'Αποθήκευση...' : 'Αποθήκευση Ωραρίου' }}
-              </button>
-              <button
-                @click="resetWorkingHoursForm"
-                class="bg-gray-300 text-gray-700 px-6 py-2 rounded-md hover:bg-gray-400 transition-colors"
-              >
-                Επαναφορά
+                v-for="slot in generateBookingSlotGrid()"
+                :key="slot.time"
+                @click="selectBookingSlot(slot)"
+                type="button"
+                :disabled="slot.isBooked"
+                :class="[
+                  'py-3 sm:py-2 text-sm sm:text-sm border rounded-lg transition-colors min-h-[44px]',
+                  bookingForm.time === slot.time ? 'bg-green-500 text-white border-green-500 font-medium' : 'bg-white hover:bg-green-50 active:bg-green-100',
+                  slot.isBooked ? 'bg-gray-200 text-gray-400 cursor-not-allowed' : ''
+                ]">
+                {{ slot.time }}
               </button>
             </div>
+          </div>
 
-          <!-- Blocked Dates Section -->
-          <div v-if="selectedTechnicianForHours" class="mt-8 border-t pt-6">
-            <h4 class="text-lg font-semibold mb-4">Αποκλεισμός Ημερομηνιών</h4>
-
-            <div class="bg-yellow-50 border-l-4 border-yellow-500 p-4 mb-4">
-              <p class="text-sm text-yellow-800">
-                Επιλέξτε εύρος ημερομηνιών για να τις κάνετε μη διαθέσιμες για ραντεβού (π.χ. άδεια, αργία).
-              </p>
+          <!-- Booking Summary -->
+          <div v-if="canBookForClient" class="p-4 bg-blue-50 border border-blue-200 rounded-lg text-sm sm:text-sm">
+            <h4 class="font-semibold text-blue-900 mb-2">Σύνοψη Κράτησης</h4>
+            <div class="text-blue-800 space-y-1">
+              <p><span class="font-medium">Πελάτης:</span> {{ getSelectedUserName() }}</p>
+              <p><span class="font-medium">Υπηρεσία:</span> {{ getSelectedServiceName() }}</p>
+              <p><span class="font-medium">Τεχνικός:</span> {{ getSelectedTechnicianName() }}</p>
+              <p><span class="font-medium">Ημερομηνία:</span> {{ formatBookingSelectedDate }}</p>
+              <p><span class="font-medium">Ώρα:</span> {{ bookingForm.time }}</p>
             </div>
+          </div>
 
-            <!-- Block Dates Form -->
-            <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
-              <div>
-                <label class="block text-sm font-medium text-gray-700 mb-2">Από Ημερομηνία</label>
-                <input
-                  type="date"
-                  v-model="blockDatesForm.start_date"
-                  :min="today"
-                  class="w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
-                />
+          <!-- Submit Button -->
+          <button
+            type="submit"
+            :disabled="!canBookForClient"
+            :class="['w-full py-4 sm:py-3 text-base sm:text-base rounded-lg font-medium transition-colors min-h-[48px]', canBookForClient ? 'bg-green-500 text-white hover:bg-green-600 active:bg-green-700' : 'bg-gray-300 text-gray-500 cursor-not-allowed']"
+          >
+            Κλείσιμο Ραντεβού
+          </button>
+
+          <p v-if="bookingError" class="text-red-500 text-xs">{{ bookingError }}</p>
+          <p v-if="bookingSuccess" class="text-green-500 text-xs">{{ bookingSuccess }}</p>
+        </form>
+      </div>
+
+      <!-- Technicians Tab -->
+      <div v-show="activeTab === 'technicians'" class="bg-white p-4 sm:p-5 md:p-6 rounded-lg shadow-md">
+        <div class="flex flex-col sm:flex-row sm:justify-between sm:items-center mb-4 sm:mb-6 gap-3">
+          <h3 class="text-lg sm:text-xl font-bold">Διαχείριση Τεχνικών</h3>
+          <button
+            @click="showAddTechnicianForm = true"
+            class="self-start sm:self-auto bg-blue-500 text-white px-4 py-3 sm:px-4 sm:py-2 text-base sm:text-sm rounded-lg hover:bg-blue-600 active:bg-blue-700 transition-colors min-h-[44px] sm:min-h-0"
+          >
+            + Προσθήκη Τεχνικού
+          </button>
+        </div>
+
+        <!-- Add Technician Form -->
+        <div v-if="showAddTechnicianForm" class="mb-4 sm:mb-6 p-3 sm:p-4 border rounded-lg bg-gray-50">
+          <h4 class="font-semibold mb-3 sm:mb-4 text-sm sm:text-base">Προσθήκη Νέου Τεχνικού</h4>
+          <form @submit.prevent="addTechnician" class="grid grid-cols-1 md:grid-cols-2 gap-3 sm:gap-4">
+            <div>
+              <label class="block text-xs sm:text-sm font-medium text-gray-700 mb-1">Όνομα</label>
+              <input v-model="newTechnician.name" type="text" required class="w-full px-3 py-3 sm:py-2 text-base sm:text-sm border rounded-md min-h-[44px] sm:min-h-0" />
+            </div>
+            <div>
+              <label class="block text-xs sm:text-sm font-medium text-gray-700 mb-1">Ειδίκευση</label>
+              <input v-model="newTechnician.specialization" type="text" class="w-full px-3 py-3 sm:py-2 text-base sm:text-sm border rounded-md min-h-[44px] sm:min-h-0" />
+            </div>
+            <div class="md:col-span-2">
+              <label class="block text-xs sm:text-sm font-medium text-gray-700 mb-1">Βιογραφικό</label>
+              <textarea v-model="newTechnician.bio" rows="3" class="w-full px-3 py-2 text-base sm:text-sm border rounded-md"></textarea>
+            </div>
+            <div class="md:col-span-2 flex flex-col sm:flex-row gap-2">
+              <button type="submit" class="bg-green-500 text-white px-4 py-3 sm:py-2 text-base sm:text-sm rounded-md hover:bg-green-600 active:bg-green-700 min-h-[44px] sm:min-h-0">
+                Αποθήκευση Τεχνικού
+              </button>
+              <button type="button" @click="cancelAddTechnician" class="bg-gray-300 text-gray-700 px-4 py-3 sm:py-2 text-base sm:text-sm rounded-md hover:bg-gray-400 active:bg-gray-500 min-h-[44px] sm:min-h-0">
+                Ακύρωση
+              </button>
+            </div>
+          </form>
+          <p v-if="technicianError" class="mt-2 text-red-500 text-xs sm:text-sm">{{ technicianError }}</p>
+          <p v-if="technicianSuccess" class="mt-2 text-green-500 text-xs sm:text-sm">{{ technicianSuccess }}</p>
+        </div>
+
+        <!-- Technicians List -->
+        <div v-if="loadingTechnicians" class="text-center py-6 sm:py-8">
+          <p class="text-gray-500 text-sm sm:text-base">Φόρτωση τεχνικών...</p>
+        </div>
+
+        <div v-else-if="technicians.length === 0" class="text-center py-6 sm:py-8">
+          <p class="text-gray-500 text-sm sm:text-base">Δεν βρέθηκαν τεχνικοί.</p>
+        </div>
+
+        <!-- Technician cards -->
+        <div v-else class="space-y-3">
+          <div
+            v-for="tech in technicians"
+            :key="tech.id"
+            class="p-3 sm:p-4 border rounded-lg hover:shadow-md transition-all"
+          >
+            <div class="flex flex-col sm:flex-row sm:justify-between sm:items-start gap-2">
+              <div class="flex-1 min-w-0 space-y-1">
+                <p class="font-semibold text-sm sm:text-base">{{ tech.name }}</p>
+                <p class="text-gray-600 text-xs sm:text-sm">{{ tech.specialization || 'N/A' }}</p>
               </div>
-              <div>
-                <label class="block text-sm font-medium text-gray-700 mb-2">Έως Ημερομηνία</label>
-                <input
-                  type="date"
-                  v-model="blockDatesForm.end_date"
-                  :min="blockDatesForm.start_date || today"
-                  class="w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
-                />
-              </div>
-              <div class="flex items-end">
-                <button
-                  @click="blockDates"
-                  :disabled="!canBlockDates || blockingDates"
-                  class="w-full bg-red-500 text-white px-4 py-2 rounded-md hover:bg-red-600 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+
+              <div class="flex flex-row sm:flex-col items-center sm:items-end gap-2">
+                <span
+                  :class="tech.is_available ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'"
+                  class="px-2 py-1 rounded-full text-xs font-semibold whitespace-nowrap"
                 >
-                  {{ blockingDates ? 'Αποκλεισμός...' : 'Αποκλεισμός Ημερομηνιών' }}
+                  {{ tech.is_available ? 'Διαθέσιμος' : 'Μη διαθέσιμος' }}
+                </span>
+                <button
+                  @click="deleteTechnician(tech.id)"
+                  class="text-red-500 hover:text-red-700 active:text-red-800 text-xs sm:text-sm font-medium transition-colors min-h-[44px] sm:min-h-0 px-2"
+                >
+                  Διαγραφή
                 </button>
               </div>
             </div>
+          </div>
+        </div>
+      </div>
 
-            <!-- List of Blocked Date Ranges -->
-            <div v-if="blockedDateRanges.length > 0" class="space-y-2">
-              <h5 class="font-medium text-gray-700 mb-3">Αποκλεισμένες Ημερομηνίες</h5>
+      <!-- Services Tab -->
+      <div v-show="activeTab === 'services'" class="bg-white p-4 sm:p-5 md:p-6 rounded-lg shadow-md">
+        <div class="flex flex-col sm:flex-row sm:justify-between sm:items-center mb-4 sm:mb-6 gap-3">
+          <h3 class="text-lg sm:text-xl font-bold">Διαχείριση Υπηρεσιών</h3>
+          <button
+            @click="showAddServiceForm = true"
+            class="self-start sm:self-auto bg-blue-500 text-white px-4 py-3 sm:px-4 sm:py-2 text-base sm:text-sm rounded-lg hover:bg-blue-600 active:bg-blue-700 transition-colors min-h-[44px] sm:min-h-0"
+          >
+            + Προσθήκη Υπηρεσίας
+          </button>
+        </div>
+
+        <!-- Add Service Form -->
+        <div v-if="showAddServiceForm" class="mb-4 sm:mb-6 p-3 sm:p-4 border rounded-lg bg-gray-50">
+          <h4 class="font-semibold mb-3 sm:mb-4 text-sm sm:text-base">Προσθήκη Νέας Υπηρεσίας</h4>
+          <form @submit.prevent="addService" class="grid grid-cols-1 md:grid-cols-2 gap-3 sm:gap-4">
+            <div>
+              <label class="block text-xs sm:text-sm font-medium text-gray-700 mb-1">Όνομα</label>
+              <input v-model="newService.name" type="text" required class="w-full px-3 py-3 sm:py-2 text-base sm:text-sm border rounded-md min-h-[44px] sm:min-h-0" />
+            </div>
+            <div>
+              <label class="block text-xs sm:text-sm font-medium text-gray-700 mb-1">Τιμή ($)</label>
+              <input v-model="newService.price" type="number" step="0.01" required class="w-full px-3 py-3 sm:py-2 text-base sm:text-sm border rounded-md min-h-[44px] sm:min-h-0" />
+            </div>
+            <div>
+              <label class="block text-xs sm:text-sm font-medium text-gray-700 mb-1">Διάρκεια (λεπτά)</label>
+              <input v-model="newService.duration" type="number" required class="w-full px-3 py-3 sm:py-2 text-base sm:text-sm border rounded-md min-h-[44px] sm:min-h-0" />
+            </div>
+            <div>
+              <label class="block text-xs sm:text-sm font-medium text-gray-700 mb-1">Κατάσταση</label>
+              <select v-model="newService.is_active" class="w-full px-3 py-3 sm:py-2 text-base sm:text-sm border rounded-md min-h-[44px] sm:min-h-0">
+                <option :value="true">Ενεργή</option>
+                <option :value="false">Ανενεργή</option>
+              </select>
+            </div>
+            <div class="md:col-span-2">
+              <label class="block text-xs sm:text-sm font-medium text-gray-700 mb-1">Περιγραφή</label>
+              <textarea v-model="newService.description" rows="3" class="w-full px-3 py-2 text-base sm:text-sm border rounded-md"></textarea>
+            </div>
+            <div class="md:col-span-2 flex flex-col sm:flex-row gap-2">
+              <button type="submit" class="bg-green-500 text-white px-4 py-3 sm:py-2 text-base sm:text-sm rounded-md hover:bg-green-600 active:bg-green-700 min-h-[44px] sm:min-h-0">
+                Αποθήκευση Υπηρεσίας
+              </button>
+              <button type="button" @click="cancelAddService" class="bg-gray-300 text-gray-700 px-4 py-3 sm:py-2 text-base sm:text-sm rounded-md hover:bg-gray-400 active:bg-gray-500 min-h-[44px] sm:min-h-0">
+                Ακύρωση
+              </button>
+            </div>
+          </form>
+          <p v-if="serviceError" class="mt-2 text-red-500 text-xs sm:text-sm">{{ serviceError }}</p>
+          <p v-if="serviceSuccess" class="mt-2 text-green-500 text-xs sm:text-sm">{{ serviceSuccess }}</p>
+        </div>
+
+        <!-- Edit Service Form -->
+        <div v-if="editingService" class="mb-4 sm:mb-6 p-3 sm:p-4 border rounded-lg bg-blue-50">
+          <h4 class="font-semibold mb-3 sm:mb-4 text-sm sm:text-base">Επεξεργασία Υπηρεσίας</h4>
+          <form @submit.prevent="updateService" class="grid grid-cols-1 md:grid-cols-2 gap-3 sm:gap-4">
+            <div>
+              <label class="block text-xs sm:text-sm font-medium text-gray-700 mb-1">Όνομα</label>
+              <input v-model="editService.name" type="text" required class="w-full px-3 py-3 sm:py-2 text-base sm:text-sm border rounded-md min-h-[44px] sm:min-h-0" />
+            </div>
+            <div>
+              <label class="block text-xs sm:text-sm font-medium text-gray-700 mb-1">Τιμή ($)</label>
+              <input v-model="editService.price" type="number" step="0.01" required class="w-full px-3 py-3 sm:py-2 text-base sm:text-sm border rounded-md min-h-[44px] sm:min-h-0" />
+            </div>
+            <div>
+              <label class="block text-xs sm:text-sm font-medium text-gray-700 mb-1">Διάρκεια (λεπτά)</label>
+              <input v-model="editService.duration" type="number" required class="w-full px-3 py-3 sm:py-2 text-base sm:text-sm border rounded-md min-h-[44px] sm:min-h-0" />
+            </div>
+            <div>
+              <label class="block text-xs sm:text-sm font-medium text-gray-700 mb-1">Κατάσταση</label>
+              <select v-model="editService.is_active" class="w-full px-3 py-3 sm:py-2 text-base sm:text-sm border rounded-md min-h-[44px] sm:min-h-0">
+                <option :value="true">Ενεργή</option>
+                <option :value="false">Ανενεργή</option>
+              </select>
+            </div>
+            <div class="md:col-span-2">
+              <label class="block text-xs sm:text-sm font-medium text-gray-700 mb-1">Περιγραφή</label>
+              <textarea v-model="editService.description" rows="3" class="w-full px-3 py-2 text-base sm:text-sm border rounded-md"></textarea>
+            </div>
+            <div class="md:col-span-2 flex flex-col sm:flex-row gap-2">
+              <button type="submit" class="bg-blue-500 text-white px-4 py-3 sm:py-2 text-base sm:text-sm rounded-md hover:bg-blue-600 active:bg-blue-700 min-h-[44px] sm:min-h-0">
+                Ενημέρωση Υπηρεσίας
+              </button>
+              <button type="button" @click="cancelEditService" class="bg-gray-300 text-gray-700 px-4 py-3 sm:py-2 text-base sm:text-sm rounded-md hover:bg-gray-400 active:bg-gray-500 min-h-[44px] sm:min-h-0">
+                Ακύρωση
+              </button>
+            </div>
+          </form>
+          <p v-if="serviceError" class="mt-2 text-red-500 text-xs sm:text-sm">{{ serviceError }}</p>
+          <p v-if="serviceSuccess" class="mt-2 text-green-500 text-xs sm:text-sm">{{ serviceSuccess }}</p>
+        </div>
+
+        <!-- Services List -->
+        <div v-if="loadingServices" class="text-center py-6 sm:py-8">
+          <p class="text-gray-500 text-sm sm:text-base">Φόρτωση υπηρεσιών...</p>
+        </div>
+
+        <div v-else-if="services.length === 0" class="text-center py-6 sm:py-8">
+          <p class="text-gray-500 text-sm sm:text-base">Δεν βρέθηκαν υπηρεσίες.</p>
+        </div>
+
+        <!-- Service cards -->
+        <div v-else class="space-y-3">
+          <div
+            v-for="service in services"
+            :key="service.id"
+            class="p-3 sm:p-4 border rounded-lg hover:shadow-md transition-all"
+          >
+            <div class="flex flex-col sm:flex-row sm:justify-between sm:items-start gap-2">
+              <div class="flex-1 min-w-0 space-y-1">
+                <p class="font-semibold text-sm sm:text-base">{{ service.name }}</p>
+                <p class="text-gray-600 text-xs sm:text-sm">\${{ service.price }} - {{ service.duration }} λεπτά</p>
+              </div>
+
+              <div class="flex flex-row sm:flex-col items-center sm:items-end gap-2">
+                <span
+                  :class="service.is_active ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'"
+                  class="px-2 py-1 rounded-full text-xs font-semibold whitespace-nowrap"
+                >
+                  {{ service.is_active ? 'Ενεργή' : 'Ανενεργή' }}
+                </span>
+                <div class="flex gap-2">
+                  <button
+                    @click="startEditService(service)"
+                    class="text-blue-500 hover:text-blue-700 active:text-blue-800 text-xs sm:text-sm font-medium transition-colors min-h-[44px] sm:min-h-0 px-2"
+                  >
+                    Επεξεργασία
+                  </button>
+                  <button
+                    @click="deleteService(service.id)"
+                    class="text-red-500 hover:text-red-700 active:text-red-800 text-xs sm:text-sm font-medium transition-colors min-h-[44px] sm:min-h-0 px-2"
+                  >
+                    Διαγραφή
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Calendar Tab -->
+      <div v-show="activeTab === 'calendar'" class="bg-white p-4 sm:p-5 md:p-6 rounded-lg shadow-md">
+        <h3 class="text-lg sm:text-xl font-bold mb-4 sm:mb-6">Ημερολόγιο Ραντεβού</h3>
+
+        <!-- Mobile Week View Navigation -->
+        <div class="md:hidden flex justify-between items-center mb-3">
+          <button @click="previousWeek" class="p-3 hover:bg-gray-100 active:bg-gray-200 rounded min-h-[44px] min-w-[44px]">
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"></path>
+            </svg>
+          </button>
+          <h4 class="text-sm font-semibold">{{ weekRangeText }}</h4>
+          <button @click="nextWeek" class="p-3 hover:bg-gray-100 active:bg-gray-200 rounded min-h-[44px] min-w-[44px]">
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
+            </svg>
+          </button>
+        </div>
+
+        <!-- Desktop Month View Navigation -->
+        <div class="hidden md:flex justify-between items-center mb-4">
+          <button @click="previousMonth" class="p-2 hover:bg-gray-100 active:bg-gray-200 rounded">
+            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"></path>
+            </svg>
+          </button>
+          <h4 class="text-lg font-semibold">{{ currentMonthYear }}</h4>
+          <button @click="nextMonth" class="p-2 hover:bg-gray-100 active:bg-gray-200 rounded">
+            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
+            </svg>
+          </button>
+        </div>
+
+        <!-- Mobile: 7-Day Week View -->
+        <div class="md:hidden space-y-2">
+          <div
+            v-for="day in weekDaysView"
+            :key="day.date"
+            :class="[
+              'border rounded-lg p-3',
+              day.isToday ? 'bg-blue-50 border-blue-300' : 'bg-white',
+              isDateBlocked(day.date) ? 'bg-red-50 border-red-200' : ''
+            ]"
+          >
+            <div class="flex justify-between items-center mb-2">
+              <div>
+                <p class="text-xs text-gray-600">{{ day.dayName }}</p>
+                <p :class="['text-lg font-semibold', day.isToday ? 'text-blue-600' : 'text-gray-900']">
+                  {{ day.day }}
+                </p>
+              </div>
+              <span v-if="isDateBlocked(day.date)" class="text-red-600 text-lg" title="Μη διαθέσιμη ημέρα">⊗</span>
+            </div>
+            <div class="space-y-2">
               <div
-                v-for="(range, index) in blockedDateRanges"
-                :key="index"
-                class="flex items-center justify-between bg-red-50 border border-red-200 rounded-md p-3"
+                v-for="apt in getAppointmentsForDate(day.date)"
+                :key="apt.id"
+                @click="showAppointmentDetails(apt)"
+                class="p-2 rounded bg-blue-100 text-blue-900 cursor-pointer hover:bg-blue-200 active:bg-blue-300 transition-colors"
               >
-                <div>
-                  <span class="font-medium">{{ formatDateRange(range.start, range.end) }}</span>
-                  <span class="text-sm text-gray-600 ml-2">({{ range.count }} {{ range.count === 1 ? 'ημέρα' : 'ημέρες' }})</span>
-                </div>
-                <button
-                  @click="removeBlockedRange(range)"
-                  class="text-red-600 hover:text-red-800 transition-colors"
-                >
-                  <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
-                  </svg>
-                </button>
+                <p class="text-sm font-medium">{{ formatTime(apt.scheduled_at) }}</p>
+                <p class="text-xs">{{ apt.user?.name }}</p>
+                <p class="text-xs text-blue-700">{{ apt.service?.name }}</p>
+              </div>
+              <div v-if="getAppointmentsForDate(day.date).length === 0" class="text-xs text-gray-400 text-center py-2">
+                Δεν υπάρχουν ραντεβού
               </div>
             </div>
-
-            <div v-else class="text-center py-4 text-gray-500">
-              Δεν υπάρχουν αποκλεισμένες ημερομηνίες για αυτόν τον τεχνικό.
-            </div>
-          </div>
-          </div>
-
-          <!-- No Technician Selected -->
-          <div v-else class="text-center py-8 text-gray-500">
-            Παρακαλώ επιλέξτε έναν τεχνικό για να διαχειριστείτε το ωράριο εργασίας του.
           </div>
         </div>
 
+        <!-- Desktop: Month Grid View -->
+        <div class="hidden md:block border rounded-lg overflow-hidden">
+          <!-- Day Headers -->
+          <div class="grid grid-cols-7 bg-gray-100">
+            <div v-for="day in ['Δευ', 'Τρί', 'Τετ', 'Πέμ', 'Παρ', 'Σάβ', 'Κυρ']" :key="day" class="text-center py-2 text-sm font-semibold text-gray-700 border-r last:border-r-0">
+              {{ day }}
+            </div>
+          </div>
+
+          <!-- Calendar Days -->
+          <div class="grid grid-cols-7">
+            <div
+              v-for="day in calendarDays"
+              :key="day.date"
+              :class="[
+                'min-h-24 p-2 border-r border-b last:border-r-0 relative',
+                day.isCurrentMonth ? 'bg-white' : 'bg-gray-50',
+                day.isToday ? 'bg-blue-50' : '',
+                isDateBlocked(day.date) ? 'bg-red-50' : ''
+              ]"
+            >
+              <div :class="[
+                'text-sm font-medium mb-1 flex items-center justify-between',
+                day.isCurrentMonth ? 'text-gray-900' : 'text-gray-400'
+              ]">
+                <span>{{ day.day }}</span>
+                <span v-if="isDateBlocked(day.date)" class="text-red-600 text-lg" title="Μη διαθέσιμη ημέρα">⊗</span>
+              </div>
+              <div class="space-y-1">
+                <div
+                  v-for="apt in getAppointmentsForDate(day.date)"
+                  :key="apt.id"
+                  @click="showAppointmentDetails(apt)"
+                  class="text-xs p-1 rounded bg-blue-100 text-blue-800 truncate cursor-pointer hover:bg-blue-200 active:bg-blue-300"
+                  :title="apt.service?.name + ' - ' + apt.user?.name"
+                >
+                  {{ formatTime(apt.scheduled_at) }} - {{apt.user?.name}}
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Appointment Details Modal -->
+        <div v-if="selectedAppointment" @click="selectedAppointment = null" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+          <div @click.stop class="bg-white rounded-lg shadow-xl max-w-md w-full p-6">
+            <div class="flex justify-between items-start mb-4">
+              <h3 class="text-lg font-bold text-gray-900">Λεπτομέρειες Ραντεβού</h3>
+              <button @click="selectedAppointment = null" class="text-gray-400 hover:text-gray-600">
+                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                </svg>
+              </button>
+            </div>
+            <div class="space-y-3">
+              <div>
+                <p class="text-xs text-gray-600">Πελάτης</p>
+                <p class="text-base font-medium">{{ selectedAppointment.user?.name }}</p>
+              </div>
+              <div v-if="selectedAppointment.user?.phone">
+                <p class="text-xs text-gray-600">Τηλέφωνο</p>
+                <p class="text-base font-medium">📞 {{ selectedAppointment.user.phone }}</p>
+              </div>
+              <div>
+                <p class="text-xs text-gray-600">Υπηρεσία</p>
+                <p class="text-base font-medium">{{ selectedAppointment.service?.name }}</p>
+              </div>
+              <div>
+                <p class="text-xs text-gray-600">Ημερομηνία & Ώρα</p>
+                <p class="text-base font-medium">{{ formatDate(selectedAppointment.scheduled_at) }}</p>
+              </div>
+              <div>
+                <p class="text-xs text-gray-600">Κατάσταση</p>
+                <span :class="getStatusClass(selectedAppointment.status)" class="inline-block px-3 py-1 rounded-full text-sm font-semibold mt-1">
+                  {{ selectedAppointment.status }}
+                </span>
+              </div>
+            </div>
+            <div class="mt-6 flex gap-2">
+              <button
+                @click="deleteAppointment(selectedAppointment.id); selectedAppointment = null"
+                class="flex-1 bg-red-500 text-white px-4 py-2 rounded-lg hover:bg-red-600 active:bg-red-700 transition-colors"
+              >
+                Διαγραφή
+              </button>
+              <button
+                @click="selectedAppointment = null"
+                class="flex-1 bg-gray-200 text-gray-700 px-4 py-2 rounded-lg hover:bg-gray-300 active:bg-gray-400 transition-colors"
+              >
+                Κλείσιμο
+              </button>
+            </div>
+          </div>
+        </div>
       </div>
+
+      <!-- Working Hours Tab -->
+      <div v-show="activeTab === 'working-hours'" class="bg-white p-4 sm:p-5 md:p-6 rounded-lg shadow-md">
+        <h3 class="text-lg sm:text-xl font-bold mb-4 sm:mb-6">Διαχείριση Ωραρίου Εργασίας Τεχνικών</h3>
+
+        <!-- Technician Selection -->
+        <div class="mb-4 sm:mb-6">
+          <label class="block text-gray-700 font-medium mb-2 text-sm sm:text-base">Επιλογή Τεχνικού</label>
+          <select
+            v-model="selectedTechnicianForHours"
+            @change="loadWorkingHours"
+            class="w-full border border-gray-300 rounded-lg px-3 py-3 sm:px-4 sm:py-2 text-base sm:text-base focus:outline-none focus:ring-2 focus:ring-blue-500 min-h-[44px]"
+          >
+            <option value=""> Επιλέξτε Τεχνικό </option>
+            <option v-for="tech in technicians" :key="tech.id" :value="tech.id">
+              {{ tech.name }}
+            </option>
+          </select>
+        </div>
+
+        <!-- Working Hours Form -->
+        <div v-if="selectedTechnicianForHours" class="space-y-3 sm:space-y-4">
+          <div class="bg-blue-50 border-l-4 border-blue-500 p-3 sm:p-4 mb-3 sm:mb-4">
+            <p class="text-xs sm:text-sm text-blue-800">
+              Ορίστε το ωράριο εργασίας για κάθε ημέρα της εβδομάδας. Απενεργοποιήστε τις ημέρες που δεν εργάζεται ο τεχνικός.
+            </p>
+          </div>
+
+          <div v-for="(day, index) in weekDays" :key="index" class="border rounded-lg p-3 sm:p-4">
+            <div class="flex flex-col sm:flex-row sm:items-center gap-3 sm:gap-4">
+              <!-- Day Name -->
+              <div class="w-full sm:w-32">
+                <label class="font-medium text-gray-700 text-sm sm:text-base">{{ day.name }}</label>
+              </div>
+
+              <!-- Active Toggle -->
+              <div class="flex items-center min-h-[44px] sm:min-h-0">
+                <input
+                  type="checkbox"
+                  v-model="workingHoursForm[index].is_active"
+                  class="w-5 h-5 sm:w-4 sm:h-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500"
+                />
+                <label class="ml-2 text-sm sm:text-sm text-gray-600">Ενεργό</label>
+              </div>
+
+              <!-- Time Inputs -->
+              <div class="flex-1 flex flex-col sm:flex-row gap-3 sm:gap-4" v-if="workingHoursForm[index].is_active">
+                <div class="flex-1">
+                  <label class="block text-xs sm:text-xs text-gray-600 mb-1">Ώρα Έναρξης</label>
+                  <input
+                    type="text"
+                    v-model="workingHoursForm[index].start_time"
+                    placeholder="09:00"
+                    pattern="([01]?[0-9]|2[0-3]):[0-5][0-9]"
+                    maxlength="5"
+                    class="w-full border border-gray-300 rounded-md px-3 py-3 sm:py-2 text-base sm:text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 min-h-[44px] sm:min-h-0"
+                  />
+                </div>
+                <div class="flex-1">
+                  <label class="block text-xs sm:text-xs text-gray-600 mb-1">Ώρα Λήξης</label>
+                  <input
+                    type="text"
+                    v-model="workingHoursForm[index].end_time"
+                    placeholder="17:00"
+                    pattern="([01]?[0-9]|2[0-3]):[0-5][0-9]"
+                    maxlength="5"
+                    class="w-full border border-gray-300 rounded-md px-3 py-3 sm:py-2 text-base sm:text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 min-h-[44px] sm:min-h-0"
+                  />
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Save Button -->
+          <div class="flex flex-col sm:flex-row gap-2 sm:gap-4 pt-3 sm:pt-4">
+            <button
+              @click="saveWorkingHours"
+              :disabled="savingWorkingHours"
+              class="bg-blue-500 text-white px-4 py-3 sm:px-6 sm:py-2 text-base sm:text-base rounded-lg hover:bg-blue-600 active:bg-blue-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed min-h-[44px] sm:min-h-0"
+            >
+              {{ savingWorkingHours ? 'Αποθήκευση...' : 'Αποθήκευση Ωραρίου' }}
+            </button>
+            <button
+              @click="resetWorkingHoursForm"
+              class="bg-gray-300 text-gray-700 px-4 py-3 sm:px-6 sm:py-2 text-base sm:text-base rounded-lg hover:bg-gray-400 active:bg-gray-500 transition-colors min-h-[44px] sm:min-h-0"
+            >
+              Επαναφορά
+            </button>
+          </div>
+
+        <!-- Blocked Dates Section -->
+        <div v-if="selectedTechnicianForHours" class="mt-6 sm:mt-8 border-t pt-4 sm:pt-6">
+          <h4 class="text-base sm:text-lg font-semibold mb-3 sm:mb-4">Αποκλεισμός Ημερομηνιών</h4>
+
+          <div class="bg-yellow-50 border-l-4 border-yellow-500 p-3 sm:p-4 mb-3 sm:mb-4">
+            <p class="text-xs sm:text-sm text-yellow-800">
+              Επιλέξτε εύρος ημερομηνιών για να τις κάνετε μη διαθέσιμες για ραντεβού (π.χ. άδεια, αργία).
+            </p>
+          </div>
+
+          <!-- Block Dates Form -->
+          <div class="grid grid-cols-1 md:grid-cols-3 gap-3 sm:gap-4 mb-4 sm:mb-6">
+            <div>
+              <label class="block text-xs sm:text-sm font-medium text-gray-700 mb-2">Από Ημερομηνία</label>
+              <input
+                type="date"
+                v-model="blockDatesForm.start_date"
+                :min="today"
+                class="w-full border border-gray-300 rounded-md px-3 py-3 sm:py-2 text-base sm:text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 min-h-[44px] sm:min-h-0"
+              />
+            </div>
+            <div>
+              <label class="block text-xs sm:text-sm font-medium text-gray-700 mb-2">Έως Ημερομηνία</label>
+              <input
+                type="date"
+                v-model="blockDatesForm.end_date"
+                :min="blockDatesForm.start_date || today"
+                class="w-full border border-gray-300 rounded-md px-3 py-3 sm:py-2 text-base sm:text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 min-h-[44px] sm:min-h-0"
+              />
+            </div>
+            <div class="flex items-end">
+              <button
+                @click="blockDates"
+                :disabled="!canBlockDates || blockingDates"
+                class="w-full bg-red-500 text-white px-4 py-3 sm:py-2 text-base sm:text-sm rounded-lg hover:bg-red-600 active:bg-red-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed min-h-[44px] sm:min-h-0"
+              >
+                {{ blockingDates ? 'Αποκλεισμός...' : 'Αποκλεισμός Ημερομηνιών' }}
+              </button>
+            </div>
+          </div>
+
+          <!-- List of Blocked Date Ranges -->
+          <div v-if="blockedDateRanges.length > 0" class="space-y-2">
+            <h5 class="font-medium text-gray-700 mb-2 sm:mb-3 text-sm sm:text-base">Αποκλεισμένες Ημερομηνίες</h5>
+            <div
+              v-for="(range, index) in blockedDateRanges"
+              :key="index"
+              class="flex flex-col sm:flex-row sm:items-center sm:justify-between bg-red-50 border border-red-200 rounded-md p-3 gap-2"
+            >
+              <div class="flex-1">
+                <span class="font-medium text-sm sm:text-base">{{ formatDateRange(range.start, range.end) }}</span>
+                <span class="text-xs sm:text-sm text-gray-600 ml-2">({{ range.count }} {{ range.count === 1 ? 'ημέρα' : 'ημέρες' }})</span>
+              </div>
+              <button
+                @click="removeBlockedRange(range)"
+                class="self-start sm:self-auto text-red-600 hover:text-red-800 active:text-red-900 transition-colors p-2 min-h-[44px] min-w-[44px] sm:min-h-0 sm:min-w-0"
+              >
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                </svg>
+              </button>
+            </div>
+          </div>
+
+          <div v-else class="text-center py-3 sm:py-4 text-gray-500 text-sm sm:text-base">
+            Δεν υπάρχουν αποκλεισμένες ημερομηνίες για αυτόν τον τεχνικό.
+          </div>
+        </div>
+
+        <!-- No Technician Selected -->
+        <div v-else class="text-center py-6 sm:py-8 text-gray-500 text-sm sm:text-base">
+          Παρακαλώ επιλέξτε έναν τεχνικό για να διαχειριστείτε το ωράριο εργασίας του.
+        </div>
+      </div>
+
     </div>
+  </div>
   `,
   data() {
     return {
       userName: '',
       activeTab: 'dashboard',
       tabs: [
-        { id: 'dashboard', name: 'Πίνακας Ελέγχου' },
-        { id: 'book', name: 'Κλείσιμο Ραντεβού' },
-        { id: 'technicians', name: 'Τεχνικοί' },
-        { id: 'services', name: 'Υπηρεσίες' },
-        { id: 'calendar', name: 'Ημερολόγιο' },
-        { id: 'working-hours', name: 'Ωράριο Εργασίας' }
+        { id: 'dashboard', name: 'Πίνακας Ελέγχου', mobileName: 'Έλεγχος' },
+        { id: 'book', name: 'Κλείσιμο Ραντεβού', mobileName: 'Κλείσιμο' },
+        { id: 'technicians', name: 'Τεχνικοί', mobileName: 'Τεχνικοί' },
+        { id: 'services', name: 'Υπηρεσίες', mobileName: 'Υπηρεσίες' },
+        { id: 'calendar', name: 'Ημερολόγιο', mobileName: 'Ημερολόγιο' },
+        { id: 'working-hours', name: 'Ωράριο Εργασίας', mobileName: 'Ωράριο' }
       ],
       stats: {
         totalAppointments: 0,
@@ -763,6 +865,8 @@ const AdminPanel = {
       serviceSuccess: '',
       currentMonth: new Date().getMonth(),
       currentYear: new Date().getFullYear(),
+      currentWeekStart: null, // For mobile week view
+      selectedAppointment: null, // For appointment details modal
       bookingMonth: new Date().getMonth(),
       bookingYear: new Date().getFullYear(),
       bookingTechnicianSchedule: null,
@@ -796,6 +900,39 @@ const AdminPanel = {
     }
   },
   computed: {
+    weekDaysView() {
+      const weekStart = this.getWeekStart();
+      const days = [];
+      const dayNames = ['Κυριακή', 'Δευτέρα', 'Τρίτη', 'Τετάρτη', 'Πέμπτη', 'Παρασκευή', 'Σάββατο'];
+      const today = new Date();
+      today.setHours(0, 0, 0, 0);
+
+      for (let i = 0; i < 7; i++) {
+        const date = new Date(weekStart);
+        date.setDate(date.getDate() + i);
+        const dateStr = date.toISOString().split('T')[0];
+        const dayDate = new Date(date);
+        dayDate.setHours(0, 0, 0, 0);
+
+        days.push({
+          date: dateStr,
+          day: date.getDate(),
+          dayName: dayNames[date.getDay()],
+          isToday: dayDate.getTime() === today.getTime()
+        });
+      }
+      return days;
+    },
+    weekRangeText() {
+      const weekStart = this.getWeekStart();
+      const weekEnd = new Date(weekStart);
+      weekEnd.setDate(weekEnd.getDate() + 6);
+
+      const startStr = weekStart.toLocaleDateString('el-GR', { day: 'numeric', month: 'short' });
+      const endStr = weekEnd.toLocaleDateString('el-GR', { day: 'numeric', month: 'short', year: 'numeric' });
+
+      return `${startStr} - ${endStr}`;
+    },
     canBookForClient() {
       return this.bookingForm.user_id && this.bookingForm.service_id &&
              this.bookingForm.technician_id && this.bookingForm.date && this.bookingForm.time;
@@ -1148,6 +1285,32 @@ const AdminPanel = {
         this.currentMonth++;
       }
     },
+    getWeekStart() {
+      if (!this.currentWeekStart) {
+        // Initialize to current week's Monday
+        const today = new Date();
+        const day = today.getDay();
+        const diff = day === 0 ? -6 : 1 - day; // Adjust to Monday
+        const monday = new Date(today);
+        monday.setDate(today.getDate() + diff);
+        monday.setHours(0, 0, 0, 0);
+        this.currentWeekStart = monday;
+      }
+      return this.currentWeekStart;
+    },
+    previousWeek() {
+      const weekStart = this.getWeekStart();
+      weekStart.setDate(weekStart.getDate() - 7);
+      this.currentWeekStart = new Date(weekStart);
+    },
+    nextWeek() {
+      const weekStart = this.getWeekStart();
+      weekStart.setDate(weekStart.getDate() + 7);
+      this.currentWeekStart = new Date(weekStart);
+    },
+    showAppointmentDetails(appointment) {
+      this.selectedAppointment = appointment;
+    },
     getAppointmentsForDate(date) {
       return this.appointments.filter(apt => {
         if (!apt.scheduled_at) return false; // ignore invalid entries
@@ -1272,6 +1435,7 @@ const AdminPanel = {
       this.bookingForm.date = '';
       this.bookingForm.time = '';
       this.bookingTechnicianSchedule = null;
+      this.bookingError = '';
       const today = new Date();
       this.bookingMonth = today.getMonth();
       this.bookingYear = today.getFullYear();
@@ -1281,11 +1445,13 @@ const AdminPanel = {
       this.bookingForm.date = '';
       this.bookingForm.time = '';
       this.bookingTechnicianSchedule = null;
+      this.bookingError = '';
     },
     resetDateTime() {
       this.bookingForm.date = '';
       this.bookingForm.time = '';
       this.bookingTechnicianSchedule = null;
+      this.bookingError = '';
     },
     getSelectedUserName() {
       const user = this.users.find(u => u.id == this.bookingForm.user_id);
@@ -1366,8 +1532,21 @@ const AdminPanel = {
     },
     selectBookingDate(day) {
       if (!day.isCurrentMonth) return;
+
+      // Prevent selecting today or past dates
+      const selectedDate = new Date(day.date);
+      const today = new Date();
+      today.setHours(0, 0, 0, 0);
+      selectedDate.setHours(0, 0, 0, 0);
+
+      if (selectedDate <= today) {
+        this.bookingError = 'Δεν μπορείτε να κλείσετε ραντεβού για σήμερα ή παρελθόντες ημερομηνίες';
+        return;
+      }
+
       this.bookingForm.date = day.date;
       this.bookingForm.time = '';
+      this.bookingError = '';
       this.fetchBookingTechnicianSchedule();
     },
     selectBookingSlot(slot) {
@@ -1617,6 +1796,13 @@ const AdminPanel = {
       }
 
       return `${formatDate(start)} - ${formatDate(end)}`;
+    },
+    isDateInvalidForBooking(dateString) {
+      const date = new Date(dateString);
+      const today = new Date();
+      today.setHours(0, 0, 0, 0);
+      date.setHours(0, 0, 0, 0);
+      return date <= today;
     }
   }
 };

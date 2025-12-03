@@ -39,6 +39,16 @@ const Register = {
           </div>
 
           <div>
+            <label class="block text-gray-700 mb-2 sm:mb-3 text-base sm:text-lg md:text-xl font-medium">Τηλέφωνο</label>
+            <input
+              v-model="phone"
+              type="tel"
+              placeholder="6901234567"
+              class="w-full px-4 py-3 sm:px-5 sm:py-4 md:px-6 md:py-5 text-base sm:text-lg md:text-xl border-2 border-gray-300 rounded-lg sm:rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
+            />
+          </div>
+
+          <div>
             <label class="block text-gray-700 mb-2 sm:mb-3 text-base sm:text-lg md:text-xl font-medium">Κωδικός</label>
             <input
               v-model="password"
@@ -88,12 +98,13 @@ const Register = {
     </div>
   `,
   data() {
-    return { 
-      name: '', 
-      email: '', 
-      password: '', 
+    return {
+      name: '',
+      email: '',
+      phone: '',
+      password: '',
       password_confirmation: '',
-      error: '' 
+      error: ''
     }
   },
   methods: {
@@ -101,6 +112,7 @@ const Register = {
       axios.post('/api/register', {
         name: this.name,
         email: this.email,
+        phone: this.phone,
         password: this.password,
         password_confirmation: this.password_confirmation
       })

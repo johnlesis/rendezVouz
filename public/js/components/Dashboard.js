@@ -170,12 +170,12 @@ const Dashboard = {
                 <p class="font-semibold text-sm sm:text-lg truncate">{{ apt.service }}</p>
                 <p class="text-gray-600 text-xs sm:text-sm mt-1">{{ apt.start_time }}</p>
                 <p class="text-gray-600 text-xs sm:text-sm">{{ apt.date }}</p>
+                <p class="text-gray-600 text-xs sm:text-sm">{{ apt.user.name }}</p>
                 <p class="text-gray-500 text-xs sm:text-sm">Κατάσταση: {{ apt.status }}</p>
               </div>
 
               <span 
                 class="px-2 py-1 rounded-full text-xs font-semibold self-start sm:self-auto whitespace-nowrap"
-                :class="getStatusClass(apt.status)"
               >
                 {{ apt.status }}
               </span>
@@ -392,7 +392,10 @@ const Dashboard = {
     fetchAppointments() {
       this.loadingAppointments = true;
       axios.get('/api/appointments')
-        .then(res => { this.appointments = res.data; this.loadingAppointments = false; })
+        .then(res => {
+          this.appointments = res.data;
+          this.loadingAppointments = false;
+        })
         .catch(() => { this.loadingAppointments = false; });
     },
     logout() {

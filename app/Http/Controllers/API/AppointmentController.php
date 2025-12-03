@@ -36,16 +36,18 @@ class AppointmentController extends Controller
             return response()->json($appointments);
         }
 
-        // Admin sees all appointments
+        // Admin sees all appointments (today and future only)
         if ($user->is_admin) {
             $appointments = Appointment::with(['service', 'user'])
-                ->orderBy('start_time', 'desc')
+                ->whereDate('start_time', '>=', now()->toDateString())
+                ->orderBy('start_time', 'asc')
                 ->get()
                 ->map(function ($apt) {
                     return [
                         'id' => $apt->id,
                         'user' => [
-                            'name' => $apt->user->name ?? 'Unknown'
+                            'name' => $apt->user->name ?? 'Unknown',
+                            'phone' => $apt->user->phone ?? null
                         ],
                         'service' => [
                             'name' => $apt->service->name ?? 'Unknown'
@@ -62,15 +64,20 @@ class AppointmentController extends Controller
             return response()->json($appointments);
         }
 
-        // Otherwise return user's appointments
+        // Otherwise return user's appointments (today and future only)
         $appointments = Appointment::where('user_id', $user->id)
-            ->with('service')
-            ->orderBy('start_time', 'desc')
+            ->with(['service', 'user'])
+            ->whereDate('start_time', '>=', now()->toDateString())
+            ->orderBy('start_time', 'asc')
             ->get()
             ->map(function ($apt) {
                 return [
                     'id' => $apt->id,
                     'service' => $apt->service->name ?? 'Unknown',
+                    'user' => [
+                        'name' => $apt->user->name ?? 'Unknown',
+                        'phone' => $apt->user->phone ?? null
+                    ],
                     'technician_id' => $apt->technician_id,
                     'date' => $apt->start_time->format('Y-m-d'),
                     'start_time' => $apt->start_time->format('H:i'),
