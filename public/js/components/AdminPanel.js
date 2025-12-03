@@ -1314,9 +1314,16 @@ const AdminPanel = {
     getAppointmentsForDate(date) {
       return this.appointments.filter(apt => {
         if (!apt.scheduled_at) return false; // ignore invalid entries
-        const aptDateObj = new Date(apt.scheduled_at);
-        if (isNaN(aptDateObj.getTime())) return false; // ignore invalid dates
-        const aptDate = aptDateObj.toISOString().split('T')[0];
+
+        // Parse dd/mm/yyyy HH:mm format
+        const dateParts = apt.scheduled_at.split(' ')[0].split('/');
+        if (dateParts.length !== 3) return false;
+
+        const day = dateParts[0].padStart(2, '0');
+        const month = dateParts[1].padStart(2, '0');
+        const year = dateParts[2];
+        const aptDate = `${year}-${month}-${day}`;
+
         return aptDate === date;
       });
     },
@@ -1356,21 +1363,35 @@ const AdminPanel = {
       this.$router.push('/');
     },
     formatDate(dateString) {
+      // If already in dd/mm/yyyy HH:mm format, return as is
+      if (dateString && dateString.includes('/') && dateString.includes(' ')) {
+        return dateString;
+      }
+
+      // Otherwise parse and format
       const date = new Date(dateString);
-      return date.toLocaleString('en-US', {
-        month: 'short',
-        day: 'numeric',
-        year: 'numeric',
-        hour: '2-digit',
-        minute: '2-digit'
-      });
+      if (isNaN(date.getTime())) return dateString; // Return original if invalid
+
+      const day = String(date.getDate()).padStart(2, '0');
+      const month = String(date.getMonth() + 1).padStart(2, '0');
+      const year = date.getFullYear();
+      const hours = String(date.getHours()).padStart(2, '0');
+      const minutes = String(date.getMinutes()).padStart(2, '0');
+      return `${day}/${month}/${year} ${hours}:${minutes}`;
     },
     formatTime(dateString) {
+      // If the string already contains time in HH:mm format (from dd/mm/yyyy HH:mm)
+      if (dateString.includes(' ')) {
+        const timePart = dateString.split(' ')[1];
+        if (timePart) return timePart;
+      }
+
+      // Fallback: parse as date object
       const date = new Date(dateString);
-      return date.toLocaleTimeString('en-US', {
-        hour: '2-digit',
-        minute: '2-digit'
-      });
+      if (isNaN(date.getTime())) return '';
+      const hours = String(date.getHours()).padStart(2, '0');
+      const minutes = String(date.getMinutes()).padStart(2, '0');
+      return `${hours}:${minutes}`;
     },
     getStatusClass(status) {
       const statusClasses = {
@@ -1496,7 +1517,16 @@ const AdminPanel = {
 
       // Get appointments for selected technician and date
       const booked = this.appointments
-        .filter(a => a.technician_id === this.bookingForm.technician_id && a.date === this.bookingForm.date)
+        .filter(a => {
+          if (a.technician_id !== this.bookingForm.technician_id) return false;
+
+          // Convert a.date from dd/mm/yyyy to yyyy-mm-dd for comparison
+          const dateParts = a.date.split('/');
+          if (dateParts.length !== 3) return false;
+          const aptDate = `${dateParts[2]}-${dateParts[1]}-${dateParts[0]}`;
+
+          return aptDate === this.bookingForm.date;
+        })
         .map(a => ({
           start: this.timeStringToMinutes(a.start_time),
           end: this.timeStringToMinutes(a.end_time)

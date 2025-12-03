@@ -53,8 +53,8 @@ class AppointmentController extends Controller
                             'name' => $apt->service->name ?? 'Unknown'
                         ],
                         'technician_id' => $apt->technician_id,
-                        'date' => $apt->start_time->format('Y-m-d'),
-                        'scheduled_at' => $apt->start_time->format('Y-m-d H:i:s'),
+                        'date' => $apt->start_time->format('d/m/Y'),
+                        'scheduled_at' => $apt->start_time->format('d/m/Y H:i'),
                         'start_time' => $apt->start_time->format('H:i'),
                         'end_time' => $apt->end_time->format('H:i'),
                         'status' => $apt->status,
@@ -79,7 +79,7 @@ class AppointmentController extends Controller
                         'phone' => $apt->user->phone ?? null
                     ],
                     'technician_id' => $apt->technician_id,
-                    'date' => $apt->start_time->format('Y-m-d'),
+                    'date' => $apt->start_time->format('d/m/Y'),
                     'start_time' => $apt->start_time->format('H:i'),
                     'end_time' => $apt->end_time->format('H:i'),
                     'status' => $apt->status,
