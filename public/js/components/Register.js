@@ -108,7 +108,9 @@ const Register = {
     }
   },
   methods: {
-    register() {
+    async register() {
+      await axios.get('/sanctum/csrf-cookie')
+      
       axios.post('/api/register', {
         name: this.name,
         email: this.email,
@@ -117,6 +119,11 @@ const Register = {
         password_confirmation: this.password_confirmation
       })
       .then(res => {
+        localStorage.setItem('token', res.data.token)
+        localStorage.setItem('user', JSON.stringify(res.data.user))
+
+        axios.defaults.headers.common['Authorization'] = `Bearer ${res.data.token}`
+
         this.$router.push('/dashboard')
       })
       .catch(err => { 

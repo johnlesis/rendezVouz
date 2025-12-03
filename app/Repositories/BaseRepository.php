@@ -3,6 +3,7 @@
 namespace App\Repositories;
 
 use App\Contracts\Repositories\BaseRepositoryInterface;
+use App\Models\User;
 use App\Support\ModelMapper;
 use Illuminate\Support\Facades\DB;
 
@@ -37,11 +38,9 @@ abstract class BaseRepository implements BaseRepositoryInterface
         return ModelMapper::fromDatabase((array) $row, $this->modelClass);
     }
 
-    public function create(array $data): object
+    public function create(array $data): User
     {
-        $id = DB::table($this->table)->insertGetId($data);
-
-        return $this->find($id);
+        return User::create($data);
     }
 
     public function update(int $id, array $data): bool
