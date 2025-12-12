@@ -910,7 +910,8 @@ const AdminPanel = {
       for (let i = 0; i < 7; i++) {
         const date = new Date(weekStart);
         date.setDate(date.getDate() + i);
-        const dateStr = date.toISOString().split('T')[0];
+        // Use formatDateString to avoid timezone issues with toISOString()
+        const dateStr = this.formatDateString(date);
         const dayDate = new Date(date);
         dayDate.setHours(0, 0, 0, 0);
 
@@ -1096,6 +1097,45 @@ const AdminPanel = {
       const month = String(date.getMonth() + 1).padStart(2, '0');
       const day = String(date.getDate()).padStart(2, '0');
       return `${year}-${month}-${day}`;
+    },
+    parseDDMMYYYY(dateString) {
+      // Safely parse dd/mm/yyyy or dd/mm/yyyy HH:mm format
+      if (!dateString || typeof dateString !== 'string') return null;
+
+      const parts = dateString.split(' ');
+      const datePart = parts[0];
+      const timePart = parts[1] || '00:00';
+
+      const dateParts = datePart.split('/');
+      if (dateParts.length !== 3) return null;
+
+      const day = parseInt(dateParts[0], 10);
+      const month = parseInt(dateParts[1], 10);
+      const year = parseInt(dateParts[2], 10);
+
+      // Validate ranges
+      if (day < 1 || day > 31 || month < 1 || month > 12 || year < 1900) {
+        console.warn('Invalid date values:', { day, month, year, original: dateString });
+        return null;
+      }
+
+      const timeParts = timePart.split(':');
+      const hours = timeParts.length >= 1 ? parseInt(timeParts[0], 10) : 0;
+      const minutes = timeParts.length >= 2 ? parseInt(timeParts[1], 10) : 0;
+
+      // Create date using individual components (month is 0-indexed in JavaScript)
+      const date = new Date(year, month - 1, day, hours, minutes, 0, 0);
+
+      // Verify the date is valid and matches what we set (catches things like Feb 31)
+      if (isNaN(date.getTime()) ||
+          date.getDate() !== day ||
+          date.getMonth() !== month - 1 ||
+          date.getFullYear() !== year) {
+        console.warn('Invalid date created:', { day, month, year, original: dateString });
+        return null;
+      }
+
+      return date;
     },
     loadUserInfo() {
       const user = JSON.parse(localStorage.getItem('user') || '{}');
@@ -1319,10 +1359,18 @@ const AdminPanel = {
         const dateParts = apt.scheduled_at.split(' ')[0].split('/');
         if (dateParts.length !== 3) return false;
 
-        const day = dateParts[0].padStart(2, '0');
-        const month = dateParts[1].padStart(2, '0');
-        const year = dateParts[2];
-        const aptDate = `${year}-${month}-${day}`;
+        const day = parseInt(dateParts[0], 10);
+        const month = parseInt(dateParts[1], 10);
+        const year = parseInt(dateParts[2], 10);
+
+        // Validate date ranges
+        if (day < 1 || day > 31 || month < 1 || month > 12 || year < 1900) {
+          return false;
+        }
+
+        const dayStr = String(day).padStart(2, '0');
+        const monthStr = String(month).padStart(2, '0');
+        const aptDate = `${year}-${monthStr}-${dayStr}`;
 
         return aptDate === date;
       });
@@ -1363,12 +1411,28 @@ const AdminPanel = {
       this.$router.push('/');
     },
     formatDate(dateString) {
-      // If already in dd/mm/yyyy HH:mm format, return as is
-      if (dateString && dateString.includes('/') && dateString.includes(' ')) {
-        return dateString;
+      if (!dateString) return '';
+
+      // If already in dd/mm/yyyy HH:mm format, validate and return
+      if (dateString.includes('/') && dateString.includes(' ')) {
+        // Validate the format
+        const parts = dateString.split(' ');
+        if (parts.length >= 2) {
+          const dateParts = parts[0].split('/');
+          if (dateParts.length === 3) {
+            const day = parseInt(dateParts[0], 10);
+            const month = parseInt(dateParts[1], 10);
+            const year = parseInt(dateParts[2], 10);
+
+            // Validate ranges
+            if (day >= 1 && day <= 31 && month >= 1 && month <= 12 && year > 1900) {
+              return dateString;
+            }
+          }
+        }
       }
 
-      // Otherwise parse and format
+      // Parse ISO format (YYYY-MM-DD) or other standard formats
       const date = new Date(dateString);
       if (isNaN(date.getTime())) return dateString; // Return original if invalid
 
@@ -1380,13 +1444,23 @@ const AdminPanel = {
       return `${day}/${month}/${year} ${hours}:${minutes}`;
     },
     formatTime(dateString) {
+      if (!dateString) return '';
+
       // If the string already contains time in HH:mm format (from dd/mm/yyyy HH:mm)
       if (dateString.includes(' ')) {
         const timePart = dateString.split(' ')[1];
-        if (timePart) return timePart;
+        if (timePart && timePart.includes(':')) return timePart;
       }
 
-      // Fallback: parse as date object
+      // Try parsing as dd/mm/yyyy format first
+      const parsedDate = this.parseDDMMYYYY(dateString);
+      if (parsedDate) {
+        const hours = String(parsedDate.getHours()).padStart(2, '0');
+        const minutes = String(parsedDate.getMinutes()).padStart(2, '0');
+        return `${hours}:${minutes}`;
+      }
+
+      // Fallback: parse as ISO or other standard format
       const date = new Date(dateString);
       if (isNaN(date.getTime())) return '';
       const hours = String(date.getHours()).padStart(2, '0');
